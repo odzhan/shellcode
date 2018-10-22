@@ -1,0 +1,168 @@
+
+  
+  ; --------------------------------
+  OS       : Windows NT x32
+  Binary   : 32-bit
+  Segments : cs=0x1B ds=0x23 es=0x23
+  Segments : fs=0x38 gs=0x00 ss=0x23
+
+  Stack Ptr: 0x0022FEF4
+  Syscall E: 0x00000000
+
+  ; --------------------------------
+  OS       : Windows 95 x32
+  Binary   : 32-bit
+  Segments : cs=0x1B ds=0x23 es=0x23
+  Segments : fs=0x38 gs=0x00 ss=0x23
+
+  Stack Ptr: 0x0022FEF4
+  Syscall E: 0x00000000
+  
+  ; --------------------------------
+  OS       : Windows 7 x32
+  Binary   : 32-bit
+  Segments : cs=0x1B ds=0x23 es=0x23
+  Segments : fs=0x3B gs=0x00 ss=0x23
+
+  Stack Ptr: 0x0022FEC4
+  Syscall E: 0x00000000
+  
+  ; --------------------------------
+
+  OS       : Windows 7 x64
+  Binary   : 32-bit
+  Segments : cs=0x23 ds=0x2B es=0x2B
+  Segments : fs=0x53 gs=0x2B ss=0x2B
+
+  Stack Ptr: 0x0030FCF4
+  Syscall E: 0x00000000
+
+  ; --------------------------------
+
+  OS       : Windows 7 x64
+  Binary   : 64-bit
+  Segments : cs=0x33 ds=0x2B es=0x2B
+  Segments : fs=0x53 gs=0x2B ss=0x2B
+
+  Stack Ptr: 0x00000000001FFCB8
+  Syscall E: 0xFFFFFFFFC0000005
+
+  ; --------------------------------
+  
+  OS       : Windows 10 x64
+  Binary   : 32-bit
+  Segments : cs=0x23 ds=0x2B es=0x2B
+  Segments : fs=0x53 gs=0x2B ss=0x2B
+
+  Stack Ptr: 0x0018FB50
+  Syscall E: 0x00000000
+  
+  ; --------------------------------
+  
+  OS       : Windows 10 x64
+  Binary   : 64-bit
+  Segments : cs=0x33 ds=0x2B es=0x2B
+  Segments : fs=0x53 gs=0x2B ss=0x2B
+
+  Stack Ptr: 0x000000000014FD88
+  Syscall E: 0x00000000C0000008
+
+  ; --------------------------------
+  
+  OS       : OpenBSD x32
+  Binary   : 32-bit
+  Segments : cs=0x2B ds=0x33 es=0x33
+  Segments : fs=0x5B gs=0x63 ss=0x33
+
+  Stack Ptr: 0xcf7c0014
+  Syscall E: 0x9
+
+  ; --------------------------------
+  OS       : OpenBSD x64
+  Binary   : 64-bit
+  Segments : cs=0x2B ds=0x23 es=0x23
+  Segments : fs=0x23 gs=0x23 ss=0x23
+
+  Stack Ptr: 0x00007f7f fffe0238
+  Syscall E: 0x9
+
+  ; --------------------------------
+
+  OS       : Linux x32
+  Binary   : 32-bit
+  Segments : cs=0x73 ds=0x7B es=0x7B
+  Segments : fs=0x00 gs=0x33 ss=0x7B
+
+  Stack Ptr: 0xbf876154
+  Syscall E: 0xfffffff7
+
+  ; --------------------------------
+  
+  OS       : Linux x64
+  Binary   : 32-bit
+  Segments : cs=0x23 ds=0x2B es=0x2B
+  Segments : fs=0x00 gs=0x63 ss=0x2B
+
+  Stack Ptr: 0xffd281c4
+  Syscall E: 0xfffffff7
+
+  ; --------------------------------
+
+  OS       : Linux x64
+  Binary   : 64-bit
+  Segments : cs=0x33 ds=0x00 es=0x00
+  Segments : fs=0x00 gs=0x00 ss=0x2B
+
+  Stack Ptr: 0x00007ffc 79c61b68
+  Syscall E: 0xfffffffffffffff2
+
+  ; --------------------------------
+  
+  OS       : FreeBSD x32
+  Binary   : 32-bit
+  Segments : cs=0x33 ds=0x3B es=0x3B
+  Segments : fs=0x3B gs=0x1B ss=0x3B
+
+  Stack Ptr: 0xbfbfecc4
+  Syscall E: 0x9
+  
+  ; --------------------------------
+  
+  OS       : FreeBSD x64
+  Binary   : 64-bit
+  Segments : cs=0x43 ds=0x3B es=0x3B
+  Segments : fs=0x13 gs=0x1B ss=0x3B
+
+  Stack Ptr: 0x00007fff ffffe8a8
+  Syscall E: 0x9
+
+  ; --------------------------------
+  
+  OS       : OSX x64
+  Binary   : 32-bit 
+  Segments : cs=0x1B ds=0x23 es=0x23 
+  Segments : fs=0x00 gs=0x0F ss=0x23
+  
+  Stack Ptr: 0xbff9f954 
+  Syscall E: 0x9
+  
+  ; --------------------------------
+  
+  OS       : OSX x64 
+  Binary   : 64-bit 
+  Segments : cs=0x2B ds=0x00 es=0x00 
+  Segments : fs=0x00 gs=0x00 ss=0x23 
+  
+  Stack Ptr: 0x00007fff 5777b908 
+  Syscall E: 0x6
+
+  ; --------------------------------
+  
+  OS       : Solaris x32 
+  Binary   : 32-bit 
+  Segments : cs=0x43 ds=0x4B es=0x4B 
+  Segments : fs=0x00 gs=0x1c3 ss=0x4B 
+  
+  Stack Ptr: 0xfeffed54 
+  Syscall E: 0x9
+  
