@@ -23,14 +23,14 @@ k1600:
 	// F(n,24){
 	mov     n, 24
 L0:
-    mov     d, 5
+        mov     d, 5
 	mov     i, 0
 L1:
 	// F(i,5){b[i]=0;F(j,5)b[i]^=s[i+j*5];}
 	str     xzr, [b, i, lsl 3]
 	mov     j, 0
 L2:
-    madd    v, i, j, d
+        madd    v, i, j, d
 	ldr     v, [s, v, lsl 3]
 	ldr     u, [b, i, lsl 3]
 	eor     u, u, v
@@ -57,11 +57,11 @@ L3:
 	
 	// F(j,5)s[i+j*5]^=t;}
 L4:
-    madd    v, i, j, d
+        madd    v, i, j, d
 	ldr     u, [s, v, lsl 3]
 	eor     u, u, t
 	str     u, [s, v, lsl 3]
-    add     j, j, 1
+        add     j, j, 1
 	cmp     j, 5
 	bne     L4
 	
@@ -101,7 +101,7 @@ L5:
 	// F(j,5){
 	mov     j, 0
 L6:
-    mov     i, 0
+        mov     i, 0
 L7:
     // F(i,5)b[i]=s[i+j*5];
 	madd    v, i, j, d
@@ -115,11 +115,11 @@ L7:
 	mov     i, 0
 L8:
 	// s[i+j*5]=b[i]^(b[(i+2)%5] & ~b[(i+1)%5]);}
-	add     v, i, i, 2
+	add     v, i, 2
 	udiv    v, v, d
 	ldr     v, [b, v, lsl 3]
 	
-	add     u, i, i, 1
+	add     u, i, 1
 	udiv    u, u, d
 	ldr     u, [b, u, lsl 3]
 	
