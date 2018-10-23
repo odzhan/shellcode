@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>/home/user/hub/shellcode/os/linux/arm64/crypto/aes/ax.s.html</title>
+<meta name="Generator" content="Vim/8.0">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="arm">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
+<meta name="colorscheme" content="none">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+* { font-size: 1em; }
+.Type { color: #008000; }
+.Comment { color: #0000c0; }
+.Constant { color: #c00000; }
+.Identifier { color: #008080; }
+.Statement { color: #af5f00; }
+.PreProc { color: #c000c0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">/**</span>
+<span class="Comment">  This is free and unencumbered software released into the public domain.</span>
+
+  <span class="Identifier">Anyone</span> <span class="Identifier">is</span> <span class="Identifier">free</span> <span class="Identifier">to</span> <span class="Identifier">copy</span><span class="Statement">,</span> <span class="Identifier">modify</span><span class="Statement">,</span> <span class="Identifier">publish</span><span class="Statement">,</span> <span class="Identifier">use</span><span class="Statement">,</span> <span class="Identifier">compile</span><span class="Statement">,</span> <span class="Identifier">sell</span><span class="Statement">,</span> <span class="Identifier">or</span>
+  <span class="Identifier">distribute</span> <span class="Identifier">this</span> <span class="Identifier">software</span><span class="Statement">,</span> <span class="Identifier">either</span> <span class="Identifier">in</span> <span class="Identifier">source</span> <span class="Identifier">code</span> <span class="Identifier">form</span> <span class="Identifier">or</span> <span class="Identifier">as</span> <span class="Identifier">a</span> <span class="Identifier">compiled</span>
+  <span class="Identifier">binary</span><span class="Statement">,</span> <span class="Identifier">for</span> <span class="Identifier">any</span> <span class="Identifier">purpose</span><span class="Statement">,</span> <span class="Identifier">commercial</span> <span class="Identifier">or</span> <span class="Identifier">non</span><span class="Statement">-</span><span class="Identifier">commercial</span><span class="Statement">,</span> <span class="Statement">and</span> <span class="Identifier">by</span> <span class="Identifier">any</span>
+  <span class="Identifier">means.</span>
+
+  <span class="Identifier">In</span> <span class="Identifier">jurisdictions</span> <span class="Identifier">that</span> <span class="Identifier">recognize</span> <span class="Identifier">copyright</span> <span class="Identifier">laws</span><span class="Statement">,</span> <span class="Identifier">the</span> <span class="Identifier">author</span> <span class="Identifier">or</span> <span class="Identifier">authors</span>
+  <span class="Identifier">of</span> <span class="Identifier">this</span> <span class="Identifier">software</span> <span class="Identifier">dedicate</span> <span class="Identifier">any</span> <span class="Statement">and</span> <span class="Identifier">all</span> <span class="Identifier">copyright</span> <span class="Identifier">interest</span> <span class="Identifier">in</span> <span class="Identifier">the</span>
+  <span class="Identifier">software</span> <span class="Identifier">to</span> <span class="Identifier">the</span> <span class="Identifier">public</span> <span class="Identifier">domain.</span> <span class="Identifier">We</span> <span class="Identifier">make</span> <span class="Identifier">this</span> <span class="Identifier">dedication</span> <span class="Identifier">for</span> <span class="Identifier">the</span> <span class="Identifier">benefit</span>
+  <span class="Identifier">of</span> <span class="Identifier">the</span> <span class="Identifier">public</span> <span class="Identifier">at</span> <span class="Identifier">large</span> <span class="Statement">and</span> <span class="Identifier">to</span> <span class="Identifier">the</span> <span class="Identifier">detriment</span> <span class="Identifier">of</span> <span class="Identifier">our</span> <span class="Identifier">heirs</span> <span class="Statement">and</span>
+  <span class="Identifier">successors.</span> <span class="Identifier">We</span> <span class="Identifier">intend</span> <span class="Identifier">this</span> <span class="Identifier">dedication</span> <span class="Identifier">to</span> <span class="Identifier">be</span> <span class="Identifier">an</span> <span class="Identifier">overt</span> <span class="Identifier">act</span> <span class="Identifier">of</span>
+  <span class="Identifier">relinquishment</span> <span class="Identifier">in</span> <span class="Identifier">perpetuity</span> <span class="Identifier">of</span> <span class="Identifier">all</span> <span class="Identifier">present</span> <span class="Statement">and</span> <span class="Identifier">future</span> <span class="Identifier">rights</span> <span class="Identifier">to</span> <span class="Identifier">this</span>
+  <span class="Identifier">software</span> <span class="Identifier">under</span> <span class="Identifier">copyright</span> <span class="Identifier">law.</span>
+
+  <span class="Identifier">THE</span> <span class="Identifier">SOFTWARE</span> <span class="Identifier">IS</span> <span class="Identifier">PROVIDED</span> <span class="Constant">&quot;AS IS&quot;</span><span class="Statement">,</span> <span class="Identifier">WITHOUT</span> <span class="Identifier">WARRANTY</span> <span class="Identifier">OF</span> <span class="Identifier">ANY</span> <span class="Identifier">KIND</span><span class="Statement">,</span>
+  <span class="Identifier">EXPRESS</span> <span class="Identifier">OR</span> <span class="Identifier">IMPLIED</span><span class="Statement">,</span> <span class="Identifier">INCLUDING</span> <span class="Identifier">BUT</span> <span class="Identifier">NOT</span> <span class="Identifier">LIMITED</span> <span class="Identifier">TO</span> <span class="Identifier">THE</span> <span class="Identifier">WARRANTIES</span> <span class="Identifier">OF</span>
+  <span class="Identifier">MERCHANTABILITY</span><span class="Statement">,</span> <span class="Identifier">FITNESS</span> <span class="Identifier">FOR</span> <span class="Identifier">A</span> <span class="Identifier">PARTICULAR</span> <span class="Identifier">PURPOSE</span> <span class="Statement">AND</span> <span class="Identifier">NONINFRINGEMENT.</span>
+  <span class="Identifier">IN</span> <span class="Identifier">NO</span> <span class="Identifier">EVENT</span> <span class="Identifier">SHALL</span> <span class="Identifier">THE</span> <span class="Identifier">AUTHORS</span> <span class="Identifier">BE</span> <span class="Identifier">LIABLE</span> <span class="Identifier">FOR</span> <span class="Identifier">ANY</span> <span class="Identifier">CLAIM</span><span class="Statement">,</span> <span class="Identifier">DAMAGES</span> <span class="Identifier">OR</span>
+  <span class="Identifier">OTHER</span> <span class="Identifier">LIABILITY</span><span class="Statement">,</span> <span class="Identifier">WHETHER</span> <span class="Identifier">IN</span> <span class="Identifier">AN</span> <span class="Identifier">ACTION</span> <span class="Identifier">OF</span> <span class="Identifier">CONTRACT</span><span class="Statement">,</span> <span class="Identifier">TORT</span> <span class="Identifier">OR</span> <span class="Identifier">OTHERWISE</span><span class="Statement">,</span>
+  <span class="Identifier">ARISING</span> <span class="Identifier">FROM</span><span class="Statement">,</span> <span class="Identifier">OUT</span> <span class="Identifier">OF</span> <span class="Identifier">OR</span> <span class="Identifier">IN</span> <span class="Identifier">CONNECTION</span> <span class="Identifier">WITH</span> <span class="Identifier">THE</span> <span class="Identifier">SOFTWARE</span> <span class="Identifier">OR</span> <span class="Identifier">THE</span> <span class="Identifier">USE</span> <span class="Identifier">OR</span>
+  <span class="Identifier">OTHER</span> <span class="Identifier">DEALINGS</span> <span class="Identifier">IN</span> <span class="Identifier">THE</span> <span class="Identifier">SOFTWARE.</span>
+
+  <span class="Identifier">For</span> <span class="Identifier">more</span> <span class="Identifier">information</span><span class="Statement">,</span> <span class="Identifier">please</span> <span class="Identifier">refer</span> <span class="Identifier">to</span> <span class="Statement">&lt;</span><span class="Identifier">http:</span><span class="Comment">//unlicense.org/&gt; */</span>
+
+<span class="Comment">// AES-128 Encryption in ARM64 assembly</span>
+<span class="Comment">// 352 bytes</span>
+
+    <span class="PreProc">.arch</span> <span class="Identifier">armv8</span><span class="Statement">-</span><span class="Identifier">a</span>
+    <span class="PreProc">.text</span>
+
+    <span class="PreProc">.global</span> <span class="Identifier">E</span>
+
+<span class="Comment">// *****************************</span>
+<span class="Comment">// Multiplication over GF(2**8)</span>
+<span class="Comment">// *****************************</span>
+<span class="Identifier">M:</span>
+    <span class="Statement">and</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Constant">0x80808080</span>
+    <span class="Statement">mov</span>      <span class="Type">w12</span><span class="Statement">,</span> <span class="Constant">27</span>
+    <span class="Statement">lsr</span>      <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Constant">7</span>
+    <span class="Statement">mul</span>      <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">w12</span>
+    <span class="Statement">eor</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">eor</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">1</span>
+    <span class="Statement">ret</span>
+
+<span class="Comment">// *****************************</span>
+<span class="Comment">// B SubByte(B x);</span>
+<span class="Comment">// *****************************</span>
+<span class="Identifier">S:</span>
+    <span class="Statement">str</span>      <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Statement">-</span><span class="Constant">16</span>]<span class="Statement">!</span>
+    <span class="Statement">ands</span>     <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Constant">0xFF</span>
+    <span class="Statement">beq</span>      <span class="Identifier">SB2</span>
+
+    <span class="Statement">mov</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">mov</span>      <span class="Type">w15</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">mov</span>      <span class="Type">x3</span><span class="Statement">,</span> <span class="Constant">0xFF</span>
+<span class="Identifier">SB0:</span>
+    <span class="Statement">cmp</span>      <span class="Type">w15</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">ccmp</span>     <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Statement">eq</span>
+    <span class="Statement">csel</span>     <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w15</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Statement">eq</span>
+    <span class="Statement">csel</span>     <span class="Type">w15</span><span class="Statement">,</span> <span class="Type">wzr</span><span class="Statement">,</span> <span class="Type">w15</span><span class="Statement">,</span> <span class="Statement">eq</span>
+    <span class="Statement">bl</span>       <span class="Identifier">M</span>
+    <span class="Statement">eor</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">subs</span>     <span class="Type">x3</span><span class="Statement">,</span> <span class="Type">x3</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">bne</span>      <span class="Identifier">SB0</span>
+
+    <span class="Statement">and</span>      <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Constant">0xFF</span>
+    <span class="Statement">mov</span>      <span class="Type">x3</span><span class="Statement">,</span> <span class="Constant">4</span>
+<span class="Identifier">SB1:</span>
+    <span class="Statement">lsr</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Constant">7</span>
+    <span class="Statement">orr</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">1</span>
+    <span class="Statement">eor</span>      <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w14</span>
+    <span class="Statement">subs</span>     <span class="Type">x3</span><span class="Statement">,</span> <span class="Type">x3</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">bne</span>      <span class="Identifier">SB1</span>
+<span class="Identifier">SB2:</span>
+    <span class="Statement">mov</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Constant">99</span>
+    <span class="Statement">eor</span>      <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">bfxil</span>    <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Constant">8</span>
+    <span class="Statement">ldr</span>      <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span>]<span class="Statement">,</span> <span class="Constant">16</span>
+    <span class="Statement">ret</span>
+
+<span class="Comment">// *****************************</span>
+<span class="Comment">// void E(void *s);</span>
+<span class="Comment">// *****************************</span>
+<span class="Identifier">E:</span>
+    <span class="Statement">str</span>      <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Statement">-</span><span class="Constant">16</span>]<span class="Statement">!</span>
+    <span class="Statement">sub</span>      <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">32</span>
+
+    <span class="Comment">// copy plain text + master key to x</span>
+    <span class="Comment">// F(8)x[i]=((W*)s)[i];</span>
+    <span class="Statement">ldp</span>      <span class="Type">x5</span><span class="Statement">,</span> <span class="Type">x6</span><span class="Statement">,</span> [<span class="Type">x0</span>]
+    <span class="Statement">ldp</span>      <span class="Type">x7</span><span class="Statement">,</span> <span class="Type">x8</span><span class="Statement">,</span> [<span class="Type">x0</span><span class="Statement">,</span> <span class="Constant">16</span>]
+    <span class="Statement">stp</span>      <span class="Type">x5</span><span class="Statement">,</span> <span class="Type">x6</span><span class="Statement">,</span> [<span class="Type">sp</span>]
+    <span class="Statement">stp</span>      <span class="Type">x7</span><span class="Statement">,</span> <span class="Type">x8</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">16</span>]
+
+    <span class="Comment">// c = 1</span>
+    <span class="Statement">mov</span>      <span class="Type">w4</span><span class="Statement">,</span> <span class="Constant">1</span>
+<span class="Identifier">L0:</span>
+    <span class="Comment">// AddRoundKey, 1st part of ExpandRoundKey</span>
+    <span class="Comment">// w=k[3];F(4)w=(w&amp;-256)|S(w),w=R(w,8),((W*)s)[i]=x[i]^k[i];</span>
+    <span class="Statement">mov</span>      <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">xzr</span>
+    <span class="Statement">ldr</span>      <span class="Type">w13</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">16</span><span class="Statement">+</span><span class="Constant">3</span><span class="Statement">*</span><span class="Constant">4</span>]
+    <span class="Statement">add</span>      <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">16</span>
+<span class="Identifier">L1:</span>
+    <span class="Statement">bl</span>       <span class="Identifier">S</span>
+    <span class="Statement">ror</span>      <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Constant">8</span>
+    <span class="Statement">ldr</span>      <span class="Type">w10</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>]
+    <span class="Statement">ldr</span>      <span class="Type">w11</span><span class="Statement">,</span> [<span class="Type">x1</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>]
+    <span class="Statement">eor</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w11</span>
+    <span class="Statement">str</span>      <span class="Type">w10</span><span class="Statement">,</span> [<span class="Type">x0</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>]
+
+    <span class="Statement">add</span>      <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">cmp</span>      <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">4</span>
+    <span class="Statement">bne</span>      <span class="Identifier">L1</span>
+
+    <span class="Comment">// AddRoundConstant, perform 2nd part of ExpandRoundKey</span>
+    <span class="Comment">// w=R(w,8)^c;F(4)w=k[i]^=w;</span>
+    <span class="Statement">eor</span>      <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">8</span>
+<span class="Identifier">L2:</span>
+    <span class="Statement">ldr</span>      <span class="Type">w10</span><span class="Statement">,</span> [<span class="Type">x1</span>]
+    <span class="Statement">eor</span>      <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">str</span>      <span class="Type">w13</span><span class="Statement">,</span> [<span class="Type">x1</span>]<span class="Statement">,</span> <span class="Constant">4</span>
+
+    <span class="Statement">subs</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">bne</span>      <span class="Identifier">L2</span>
+
+    <span class="Comment">// if round 11, stop</span>
+    <span class="Comment">// if(c==108)break;</span>
+    <span class="Statement">cmp</span>      <span class="Type">w4</span><span class="Statement">,</span> <span class="Constant">108</span>
+    <span class="Statement">beq</span>      <span class="Identifier">L5</span>
+
+    <span class="Comment">// update round constant</span>
+    <span class="Comment">// c=M(c);</span>
+    <span class="Statement">mov</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w4</span>
+    <span class="Statement">bl</span>       <span class="Identifier">M</span>
+    <span class="Statement">mov</span>      <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w10</span>
+
+    <span class="Comment">// SubBytes and ShiftRows</span>
+    <span class="Comment">// F(16)((B*)x)[(i%4)+(((i/4)-(i%4))%4)*4]=S(s[i]);</span>
+<span class="Identifier">L3:</span>
+    <span class="Statement">ldrb</span>     <span class="Type">w13</span><span class="Statement">,</span> [<span class="Type">x0</span><span class="Statement">,</span> <span class="Type">x2</span>]
+    <span class="Statement">bl</span>       <span class="Identifier">S</span>
+    <span class="Statement">and</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Constant">3</span>
+    <span class="Statement">lsr</span>      <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Constant">2</span>
+    <span class="Statement">sub</span>      <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">and</span>      <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w11</span><span class="Statement">,</span> <span class="Constant">3</span>
+    <span class="Statement">add</span>      <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w11</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>
+    <span class="Statement">strb</span>     <span class="Type">w13</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Statement">uxtw</span>]
+
+    <span class="Statement">add</span>      <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">cmp</span>      <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">16</span>
+    <span class="Statement">bne</span>      <span class="Identifier">L3</span>
+
+    <span class="Comment">// if (c != 108)</span>
+    <span class="Statement">cmp</span>      <span class="Type">w4</span><span class="Statement">,</span> <span class="Constant">108</span>
+<span class="Identifier">L4:</span>
+    <span class="Statement">beq</span>      <span class="Identifier">L0</span>
+    <span class="Statement">subs</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">4</span>
+
+    <span class="Comment">// MixColumns</span>
+    <span class="Comment">// F(4)w=x[i],x[i]=R(w,8)^R(w,16)^R(w,24)^M(R(w,8)^w);</span>
+    <span class="Statement">ldr</span>      <span class="Type">w13</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x2</span>]
+    <span class="Statement">eor</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">8</span>
+    <span class="Statement">bl</span>       <span class="Identifier">M</span>
+    <span class="Statement">eor</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">8</span>
+    <span class="Statement">eor</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">16</span>
+    <span class="Statement">eor</span>      <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w14</span><span class="Statement">,</span> <span class="Type">w13</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">24</span>
+    <span class="Statement">str</span>      <span class="Type">w14</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x2</span>]
+
+    <span class="Statement">b</span>        <span class="Identifier">L4</span>
+<span class="Identifier">L5:</span>
+    <span class="Statement">add</span>      <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">32</span>
+    <span class="Statement">ldr</span>      <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span>]<span class="Statement">,</span> <span class="Constant">16</span>
+    <span class="Statement">ret</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>/home/user/hub/shellcode/os/linux/arm64/crypto/lea/leax.s.html</title>
+<meta name="Generator" content="Vim/8.0">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="arm">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
+<meta name="colorscheme" content="none">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+* { font-size: 1em; }
+.Type { color: #008000; }
+.Comment { color: #0000c0; }
+.Constant { color: #c00000; }
+.Identifier { color: #008080; }
+.Statement { color: #af5f00; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+.PreProc { color: #c000c0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">/**</span>
+<span class="Comment">  Copyright © 2017 Odzhan. All Rights Reserved.</span>
+
+<span class="Comment">  Redistribution and use in source and binary forms, with or without</span>
+<span class="Comment">  modification, are permitted provided that the following conditions are</span>
+<span class="Comment">  met:</span>
+
+<span class="Comment">  1. Redistributions of source code must retain the above copyright</span>
+<span class="Comment">  </span><span class="Todo">notice</span><span class="Comment">, this list of conditions and the following disclaimer.</span>
+
+<span class="Comment">  2. Redistributions in binary form must reproduce the above copyright</span>
+<span class="Comment">  </span><span class="Todo">notice</span><span class="Comment">, this list of conditions and the following disclaimer in the</span>
+<span class="Comment">  documentation and/or other materials provided with the distribution.</span>
+
+<span class="Comment">  3. The name of the </span><span class="Todo">author</span><span class="Comment"> may not be used to endorse or promote products</span>
+<span class="Comment">  derived from this software without specific prior written permission.</span>
+
+<span class="Comment">  THIS SOFTWARE IS PROVIDED BY AUTHORS &quot;AS IS&quot; AND ANY EXPRESS OR</span>
+<span class="Comment">  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</span>
+<span class="Comment">  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="Comment">  DISCLAIMED. IN NO EVENT SHALL THE </span><span class="Todo">AUTHOR</span><span class="Comment"> BE LIABLE FOR ANY DIRECT,</span>
+<span class="Comment">  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES</span>
+<span class="Comment">  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="Comment">  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)</span>
+<span class="Comment">  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,</span>
+<span class="Comment">  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN</span>
+<span class="Comment">  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="Comment">  POSSIBILITY OF SUCH DAMAGE. */</span>
+
+<span class="Comment">// LEA-128/128 in ARM64 assembly</span>
+<span class="Comment">// 224 bytes</span>
+
+    <span class="PreProc">.arch</span> <span class="Identifier">armv8</span><span class="Statement">-</span><span class="Identifier">a</span>
+
+    <span class="Comment">// include the MOVL macro</span>
+    <span class="PreProc">.include</span> <span class="Constant">&quot;../../include.inc&quot;</span>
+
+    <span class="PreProc">.text</span>
+    <span class="PreProc">.global</span> <span class="Identifier">lea128</span>
+
+<span class="Identifier">lea128:</span>
+    <span class="Statement">mov</span>    <span class="Type">x11</span><span class="Statement">,</span> <span class="Type">x0</span>
+    <span class="Statement">mov</span>    <span class="Type">x12</span><span class="Statement">,</span> <span class="Type">x1</span>
+
+    <span class="Comment">// allocate 16 bytes</span>
+    <span class="Statement">sub</span>    <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">4</span><span class="Statement">*</span><span class="Constant">4</span>
+
+    <span class="Comment">// load immediate values</span>
+    <span class="Identifier">movl</span>   <span class="Type">w0</span><span class="Statement">,</span> <span class="Constant">0xc3efe9db</span>
+    <span class="Identifier">movl</span>   <span class="Type">w1</span><span class="Statement">,</span> <span class="Constant">0x88c4d604</span>
+    <span class="Identifier">movl</span>   <span class="Type">w2</span><span class="Statement">,</span> <span class="Constant">0xe789f229</span>
+    <span class="Identifier">movl</span>   <span class="Type">w3</span><span class="Statement">,</span> <span class="Constant">0xc6f98763</span>
+
+    <span class="Comment">// store on stack</span>
+    <span class="Statement">str</span>    <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span>    ]
+    <span class="Statement">str</span>    <span class="Type">w1</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span>  <span class="Constant">4</span>]
+    <span class="Statement">str</span>    <span class="Type">w2</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span>  <span class="Constant">8</span>]
+    <span class="Statement">str</span>    <span class="Type">w3</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">12</span>]
+
+    <span class="Comment">// for(r=0;r&lt;24;r++) {</span>
+    <span class="Statement">mov</span>    <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">wzr</span>
+
+    <span class="Comment">// load 128-bit key</span>
+    <span class="Statement">ldp</span>    <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w5</span><span class="Statement">,</span> [<span class="Type">x11</span>]
+    <span class="Statement">ldp</span>    <span class="Type">w6</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> [<span class="Type">x11</span><span class="Statement">,</span> <span class="Constant">8</span>]
+
+    <span class="Comment">// load 128-bit plaintext</span>
+    <span class="Statement">ldp</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> [<span class="Type">x12</span>]
+    <span class="Statement">ldp</span>    <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w3</span><span class="Statement">,</span> [<span class="Type">x12</span><span class="Statement">,</span> <span class="Constant">8</span>]
+<span class="Identifier">L0:</span>
+    <span class="Comment">// t=c[r%4];</span>
+    <span class="Statement">and</span>    <span class="Type">w9</span><span class="Statement">,</span> <span class="Type">w8</span><span class="Statement">,</span> <span class="Constant">3</span>
+    <span class="Statement">ldr</span>    <span class="Type">w10</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x9</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>]
+
+    <span class="Comment">// c[r%4]=R(t,28);</span>
+    <span class="Statement">mov</span>    <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Statement">ror</span> <span class="Constant">28</span>
+    <span class="Statement">str</span>    <span class="Type">w11</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x9</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">2</span>]
+
+    <span class="Comment">// k[0]=R(k[0]+t,31);</span>
+    <span class="Statement">add</span>    <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w10</span>
+    <span class="Statement">ror</span>    <span class="Type">w4</span><span class="Statement">,</span> <span class="Type">w4</span><span class="Statement">,</span> <span class="Constant">31</span>
+
+    <span class="Comment">// k[1]=R(k[1]+R(t,31),29);</span>
+    <span class="Statement">ror</span>    <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Constant">31</span>
+    <span class="Statement">add</span>    <span class="Type">w5</span><span class="Statement">,</span> <span class="Type">w5</span><span class="Statement">,</span> <span class="Type">w11</span>
+    <span class="Statement">ror</span>    <span class="Type">w5</span><span class="Statement">,</span> <span class="Type">w5</span><span class="Statement">,</span> <span class="Constant">29</span>
+
+    <span class="Comment">// k[2]=R(k[2]+R(t,30),26);</span>
+    <span class="Statement">ror</span>    <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Constant">30</span>
+    <span class="Statement">add</span>    <span class="Type">w6</span><span class="Statement">,</span> <span class="Type">w6</span><span class="Statement">,</span> <span class="Type">w11</span>
+    <span class="Statement">ror</span>    <span class="Type">w6</span><span class="Statement">,</span> <span class="Type">w6</span><span class="Statement">,</span> <span class="Constant">26</span>
+
+    <span class="Comment">// k[3]=R(k[3]+R(t,29),21);</span>
+    <span class="Statement">ror</span>    <span class="Type">w11</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Constant">29</span>
+    <span class="Statement">add</span>    <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w11</span>
+    <span class="Statement">ror</span>    <span class="Type">w7</span><span class="Statement">,</span> <span class="Type">w7</span><span class="Statement">,</span> <span class="Constant">21</span>
+
+    <span class="Comment">// t=x[0];</span>
+    <span class="Statement">mov</span>    <span class="Type">w10</span><span class="Statement">,</span> <span class="Type">w0</span>
+
+    <span class="Comment">// w[0]=R((w[0]^k[0])+(w[1]^k[1]),23);</span>
+    <span class="Statement">eor</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w4</span>
+    <span class="Statement">eor</span>    <span class="Type">w9</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w5</span>
+    <span class="Statement">add</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w9</span>
+    <span class="Statement">ror</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w0</span><span class="Statement">,</span> <span class="Constant">23</span>
+
+    <span class="Comment">// w[1]=R((w[1]^k[2])+(w[2]^k[1]),5);</span>
+    <span class="Statement">eor</span>    <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w6</span>
+    <span class="Statement">eor</span>    <span class="Type">w9</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w5</span>
+    <span class="Statement">add</span>    <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w9</span>
+    <span class="Statement">ror</span>    <span class="Type">w1</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> <span class="Constant">5</span>
+
+    <span class="Comment">// w[2]=R((w[2]^k[3])+(w[3]^k[1]),3);</span>
+    <span class="Statement">eor</span>    <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w7</span>
+    <span class="Statement">eor</span>    <span class="Type">w3</span><span class="Statement">,</span> <span class="Type">w3</span><span class="Statement">,</span> <span class="Type">w5</span>
+    <span class="Statement">add</span>    <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w3</span>
+    <span class="Statement">ror</span>    <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> <span class="Constant">3</span>
+
+    <span class="Comment">// w[3]=t;</span>
+    <span class="Statement">mov</span>    <span class="Type">w3</span><span class="Statement">,</span> <span class="Type">w10</span>
+
+    <span class="Comment">// r++</span>
+    <span class="Statement">add</span>    <span class="Type">w8</span><span class="Statement">,</span> <span class="Type">w8</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Comment">// r &lt; 24</span>
+    <span class="Statement">cmp</span>    <span class="Type">w8</span><span class="Statement">,</span> <span class="Constant">24</span>
+    <span class="Statement">bne</span>    <span class="Identifier">L0</span>
+
+    <span class="Comment">// save 128-bit ciphertext</span>
+    <span class="Statement">stp</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> [<span class="Type">x12</span>]
+    <span class="Statement">stp</span>    <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w3</span><span class="Statement">,</span> [<span class="Type">x12</span><span class="Statement">,</span> <span class="Constant">8</span>]
+
+    <span class="Statement">add</span>    <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">4</span><span class="Statement">*</span><span class="Constant">4</span>
+    <span class="Statement">ret</span>
+
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
