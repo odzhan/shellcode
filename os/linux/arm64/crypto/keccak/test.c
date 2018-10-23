@@ -60,7 +60,7 @@ uint8_t k800s2[]={
 
 int main(void)
 {
-    uint8_t  out[100];
+    uint8_t  out[200];
     int      equ;
 
     memset(out, 0, sizeof(out));
@@ -86,6 +86,18 @@ int main(void)
     equ = memcmp(out, k800s2, sizeof(k800s2))==0;
     printf("Keccak-f[800, 22] test 2 %s\n\n", equ ? "OK" : "Failed");
     //bin2hex(out, 100);
+
+    memset(out, 0, sizeof(out));
     
+    k1600(out);
+    //equ = memcmp(out, k1600s1, sizeof(k1600s1))==0;
+    printf("Keccak-f[1600, 24] test 1 %s\n", equ ? "OK" : "Failed");
+    bin2hex(out, 200);
+
+    k1600(out);
+    //equ = memcmp(out, k1600s2, sizeof(k1600s2))==0;
+    printf("Keccak-f[1600, 24] test 2 %s\n\n", equ ? "OK" : "Failed");
+    bin2hex(out, 200);
+        
     return 0;
 }

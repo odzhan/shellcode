@@ -5,7 +5,7 @@
 <title>/home/user/hub/shellcode/os/linux/arm64/execve.s.html</title>
 <meta name="Generator" content="Vim/8.0">
 <meta name="plugin-version" content="vim7.4_v2">
-<meta name="syntax" content="armv4">
+<meta name="syntax" content="arm">
 <meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
 <meta name="colorscheme" content="none">
 <style type="text/css">
@@ -18,6 +18,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
 .Constant { color: #c00000; }
 .Identifier { color: #008080; }
 .Statement { color: #af5f00; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
 .PreProc { color: #c000c0; }
 -->
 </style>
@@ -33,12 +34,12 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
  <span class="Comment">/**</span>
 <span class="Comment">  Copyright © 2018 Odzhan. All Rights Reserved.</span>
 
-  <span class="Identifier">Redistribution</span> <span class="Statement">and</span> <span class="Identifier">use</span> <span class="Identifier">in</span> <span class="Identifier">source</span> <span class="Statement">and</span> <span class="Identifier">binary</span> <span class="Identifier">forms</span><span class="Statement">,</span> <span class="Identifier">with</span> <span class="Identifier">or</span> <span class="Identifier">without</span>
-  <span class="Identifier">modification</span><span class="Statement">,</span> <span class="Identifier">are</span> <span class="Identifier">permitted</span> <span class="Identifier">provided</span> <span class="Identifier">that</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">conditions</span> <span class="Identifier">are</span>
-  <span class="Identifier">met:</span>
+<span class="Comment">  Redistribution and use in source and binary forms, with or without</span>
+<span class="Comment">  modification, are permitted provided that the following conditions are</span>
+<span class="Comment">  met:</span>
 
-  <span class="Constant">1.</span> <span class="Identifier">Redistributions</span> <span class="Identifier">of</span> <span class="Identifier">source</span> <span class="Identifier">code</span> <span class="Identifier">must</span> <span class="Identifier">retain</span> <span class="Identifier">the</span> <span class="Identifier">above</span> <span class="Identifier">copyright</span>
-  <span class="Identifier">notice</span><span class="Statement">,</span> <span class="Identifier">this</span> <span class="Identifier">list</span> <span class="Identifier">of</span> <span class="Identifier">conditions</span> <span class="Statement">and</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">disclaimer.</span>
+<span class="Comment">  1. Redistributions of source code must retain the above copyright</span>
+<span class="Comment">  </span><span class="Todo">notice</span><span class="Comment">, this list of conditions and the following disclaimer.</span>
 
   <span class="Constant">2.</span> <span class="Identifier">Redistributions</span> <span class="Identifier">in</span> <span class="Identifier">binary</span> <span class="Identifier">form</span> <span class="Identifier">must</span> <span class="Identifier">reproduce</span> <span class="Identifier">the</span> <span class="Identifier">above</span> <span class="Identifier">copyright</span>
   <span class="Identifier">notice</span><span class="Statement">,</span> <span class="Identifier">this</span> <span class="Identifier">list</span> <span class="Identifier">of</span> <span class="Identifier">conditions</span> <span class="Statement">and</span> <span class="Identifier">the</span> <span class="Identifier">following</span> <span class="Identifier">disclaimer</span> <span class="Identifier">in</span> <span class="Identifier">the</span>
@@ -76,7 +77,7 @@ body { font-family: monospace; color: #000000; background-color: #ffffff; }
     <span class="Identifier">movq</span>   <span class="Type">x3</span><span class="Statement">,</span> <span class="Identifier">BINSH</span>         <span class="Comment">// &quot;/bin/sh&quot;</span>
     <span class="Statement">str</span>    <span class="Type">x3</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Statement">-</span><span class="Constant">16</span>]<span class="Statement">!</span>    <span class="Comment">// stores string on stack</span>
     <span class="Statement">mov</span>    <span class="Type">x0</span><span class="Statement">,</span> <span class="Type">sp</span>
-    <span class="Identifier">svc</span>    <span class="Constant">0</span>
+    <span class="Statement">svc</span>    <span class="Constant">0</span>
 </pre>
 </body>
 </html>

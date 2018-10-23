@@ -27,28 +27,28 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#define R(v,n)(((v)<<(n))|((v)>>(64-(n))))
+#define R(v,n)(((v)>>(n))|((v)<<(64-(n))))
 #define F(a,b)for(a=0;a<b;a++)
   
-void keccak(void*p) {
+void k1600(void*p) {
   unsigned long long n,i,j,r,x,y,t,Y,b[5],*s=p;
-  unsigned char RC=1;
+  unsigned char c=1;
   
   F(n,24){
-    F(i,5){b[i]=0;F(j,5)b[i]^=s[i+5*j];}
+    F(i,5){b[i]=0;F(j,5)b[i]^=s[i+j*5];}
     F(i,5){
-      t=b[(i+4)%5]^R(b[(i+1)%5],1);
-      F(j,5)s[i+5*j]^=t;}
+      t=b[(i+4)%5]^R(b[(i+1)%5],63);
+      F(j,5)s[i+j*5]^=t;}
     t=s[1],y=r=0,x=1;
     F(j,24)
-      r+=j+1,Y=2*x+3*y,x=y,y=Y%5,
-      Y=s[x+5*y],s[x+5*y]=R(t,r%64),t=Y;
+      r+=j+1,Y=(x*2)+(y*3),x=y,y=Y%5,
+      Y=s[x+y*5],s[x+y*5]=R(t, -(r-64) % 64),t=Y;
     F(j,5){
-      F(i,5)b[i]=s[i+5*j];
+      F(i,5)b[i]=s[i+j*5];
       F(i,5)
-        s[i+5*j]=b[i]^(~b[(i+1)%5]&b[(i+2)%5]);}
+        s[i+j*5]=b[i]^(b[(i+2)%5]&~b[(i+1)%5]);}
     F(j,7)
-      if((RC=(RC<<1)^(113*(RC>>7)))&2)
+      if((c=(c<<1)^((c>>7)*113))&2)
         *s^=1ULL<<((1<<j)-1);
   }
 }
