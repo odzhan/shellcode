@@ -1,4 +1,6 @@
 
+// keccak-f[1600, 24]
+// 424 bytes
 
     .arch armv8-a
     .text
@@ -18,23 +20,23 @@
     #define v x11
     #define u x12
     #define b sp   // local buffer
-    #define zr xzr
 
 k1600:
     sub     sp, sp, 64 
     // F(n,24){
     mov     n, 24
-    mov     c, 1
+    mov     c, 1        // c = 1
 L0:
     mov     d, 5
     mov     i, 0
 L1:
     // F(i,5){b[i]=0;F(j,5)b[i]^=s[i+j*5];}
     mov     j, 0
-    mov     u, zr
+    mov     u, 0
 L2:
     madd    v, j, d, i              // v = (j * 5) + i
     ldr     v, [s, v, lsl 3]        // v = s[v]
+
     eor     u, u, v                 // u ^= v
 	
     add     j, j, 1                 // j = j + 1
@@ -50,7 +52,7 @@ L2:
     // F(i,5){
     mov     i, 0
 L3:
-    // t=b[(i+4)%5]^R(b[(i+1)%5],63);
+    // t=b[(i+4)%5] ^ R(b[(i+1)%5], 63);
     add     v, i, 4                   // v = i + 4
     udiv    u, v, d                   // u = (v / 5)
     msub    v, u, d, v                // v = (v - (u * 5))
@@ -114,7 +116,7 @@ L5:
     // F(j,5){
     mov     j, 0                // j = 0
 L6:
-    // F(i,5)b[i]=s[i+j*5];
+    // F(i,5)b[i] = s[i+j*5];
     mov     i, 0                // i = 0
 L7:
     madd    v, j, d, i          // v = (j * 5) + i
@@ -128,7 +130,7 @@ L7:
     // F(i,5)
     mov     i, 0                // i = 0
 L8:
-    // s[i+j*5]=b[i]^(b[(i+2)%5] & ~b[(i+1)%5]);}
+    // s[i+j*5] = b[i] ^ (b[(i+2)%5] & ~b[(i+1)%5]);}
     add     v, i, 2             // v = i + 2 
     udiv    u, v, d             // u = v / 5
     msub    v, u, d, v          // v = (v - (u * 5)) 
