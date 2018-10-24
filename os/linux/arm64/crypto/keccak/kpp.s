@@ -21,9 +21,10 @@
     #define zr xzr
 
 k1600:
-    sub     sp, sp, 256 
+    sub     sp, sp, 64 
     // F(n,24){
     mov     n, 24
+    mov     c, 1
 L0:
     mov     d, 5
     mov     i, 0
@@ -176,5 +177,5 @@ L10:
     sub     n, n, 1             // n = n - 1
     cbnz    n, L0
     
-    add     sp, sp, 256 
+    add     sp, sp, 64 
     ret
