@@ -27,7 +27,7 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#define R(v,n)(((v)<<(n))|((v)>>(32-(n))))
+#define R(v,n)(((v)>>(n))|((v)<<(32-(n))))
 #define F(n)for(i=0;i<n;i++)
 #define X(a,b)(t)=(a),(a)=(b),(b)=(t)
 typedef unsigned int W;
@@ -44,7 +44,7 @@ void P(W*s,W*x){
       a=(d&15);b=(d>>4&15);
       c=(d>>8&15);d>>=12;
       
-      for(r=0x07080C10;r;r>>=8)
+      for(r=0x19181410;r;r>>=8)
         x[a]+=x[b],
         x[d]=R(x[d]^x[a],(r&255)),
         X(a,c),X(b,d);
@@ -53,14 +53,14 @@ void P(W*s,W*x){
     s[12]++;
 }
 void chacha(W l,void*in,void*state){
-    unsigned char c[64],*p=in;
+    unsigned char x[64],*p=in;
     W i,r,*s=state,*k=in;
 
     if(l) {
       while(l) {
-        P(s,(W*)c);
+        P(s,(W*)x);
         r=(l>64)?64:l;
-        F(r)*p++^=c[i];
+        F(r)*p++^=x[i];
         l-=r;
       }
     } else {
