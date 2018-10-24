@@ -149,7 +149,11 @@ L8:
     add     i, i, 1             // i++
     cmp     i, 5                // i < 5
     bne     L8
-    
+   
+    add     j, j, 1
+    cmp     j, 5
+    bne     L6
+ 
     // F(j,7)
     mov     j, 0                // j = 0
     mov     d, 113
