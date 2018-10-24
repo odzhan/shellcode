@@ -102,9 +102,7 @@ L5:
     // Y=s[x+y*5],s[x+y*5]=R(t, -(r - 64) % 64),t=Y;
     madd    v, y, d, x          // v = (y * 5) + x
     ldr     Y, [s, v, lsl 3]    // Y = s[v]
-    sub     u, r, 64            // u = r - 64
-    neg     u, u                // u = -u
-    and     u, u, 63            // u %= 64
+    neg     u, r 
     ror     t, t, u             // t = R(t, u)
     str     t, [s, v, lsl 3]    // s[v] = t 
     mov     t, Y

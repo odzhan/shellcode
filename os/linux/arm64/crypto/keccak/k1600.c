@@ -42,7 +42,7 @@ void k1600(void*p) {
     t=s[1],y=r=0,x=1;
     F(j,24)
       r+=j+1,Y=(x*2)+(y*3),x=y,y=Y%5,
-      Y=s[x+y*5],s[x+y*5]=R(t, -(r-64) % 64),t=Y;
+      Y=s[x+y*5],s[x+y*5]=R(t, -r),t=Y;
     F(j,5){
       F(i,5)b[i]=s[i+j*5];
       F(i,5)
