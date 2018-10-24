@@ -139,7 +139,7 @@ L8:
     ldr     u, [b, v, lsl 3]    // u = b[v]
     
     bic     u, t, u             // u = (t & ~u)
-
+    
     ldr     t, [b, i, lsl 3]    // t = b[i]
     eor     t, t, u             // t ^= u
    
@@ -149,11 +149,7 @@ L8:
     add     i, i, 1             // i++
     cmp     i, 5                // i < 5
     bne     L8
-   
-    add     j, j, 1
-    cmp     j, 5
-    bne     L6
- 
+    
     // F(j,7)
     mov     j, 0                // j = 0
     mov     d, 113
