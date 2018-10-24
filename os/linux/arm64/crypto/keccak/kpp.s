@@ -18,6 +18,7 @@
     #define v x11
     #define u x12
     #define b sp   // local buffer
+	#define zr xzr
 
 k1600:
     // F(n,24){
@@ -27,7 +28,7 @@ L0:
     mov     i, 0
 L1:
     // F(i,5){b[i]=0;F(j,5)b[i]^=s[i+j*5];}
-    str     xzr, [b, i, lsl 3]
+    str     zr, [b, i, lsl 3]
     mov     j, 0
 L2:
     madd    v, i, j, d
@@ -35,6 +36,7 @@ L2:
     ldr     u, [b, i, lsl 3]
     eor     u, u, v
     str     u, [b, i, lsl 3]
+	
     add     j, j, 1
     cmp     j, 5
     bne     L2
@@ -49,28 +51,39 @@ L2:
 	// udiv x4, x3, d
 	// add x4, x4, x4, lsl 2
 	// sub x4, x3, x4
+	
+	// if (x >= 5) x -= 5;
+	//cmp    x, 5
+	//subge  x, 5
+	
+	//sub    t, x, 5
+	//cmp    x, 5
+	//csel   x, x, t, lt
+	
+	// 0, 1, 2, 3, 4, 0, 1, 2, 3, 4
     // F(i,5){
+	mov     i, 0
 L3:
     // t=b[(i+4)%5]^R(b[(i+1)%5],63);
     add     v, i, 4
     udiv    v, v, d
-	mul     v, v, d
-	sub     v, i, v
+	msub    v, i, v, d
     ldr     t, [b, v, lsl 3]
     
     add     v, i, 1
     udiv    v, v, d
-	mul     v, v, d
-	sub     v, i, v
+	msub    v, i, v, d
     ldr     u, [b, v, lsl 3]
     eor     t, t, u, ror 63
     
     // F(j,5)s[i+j*5]^=t;}
+	mov     j, 0
 L4:
     madd    v, i, j, d
     ldr     u, [s, v, lsl 3]
     eor     u, u, t
     str     u, [s, v, lsl 3]
+	
     add     j, j, 1
     cmp     j, 5
     bne     L4
@@ -81,8 +94,8 @@ L4:
     
     // t=s[1],y=r=0,x=1;
     ldr     t, [s, 8]
-    mov     y, xzr
-    mov     r, xzr
+    mov     y, 0
+    mov     r, 0
     mov     x, 1
     
     // F(j,24)
@@ -93,9 +106,9 @@ L5:
     add     Y, y, y, lsl 1     // Y = y * 3
     add     Y, Y, x, lsl 1     // Y += (x * 2)
     mov     y, x
+	// y = (y - (Y / d) * 5)
     udiv    y, Y, d
-	mul     y, y, d
-	sub     y, Y, y
+	msub    y, Y, y, d
 	
     // Y=s[x+y*5],s[x+y*5]=R(t, -(r - 64) % 64),t=Y;
     madd    v, x, y, d
@@ -106,6 +119,7 @@ L5:
     ror     t, t, u
     str     t, [s, v, lsl 3]
     mov     t, Y
+	
     add     j, j, 1
     cmp     j, 24+1
     bne     L5
@@ -113,12 +127,13 @@ L5:
     // F(j,5){
     mov     j, 0
 L6:
+    // F(i,5)b[i]=s[i+j*5];
     mov     i, 0
 L7:
-    // F(i,5)b[i]=s[i+j*5];
     madd    v, i, j, d
     ldr     t, [s, v, lsl 3]
     str     t, [b, i, lsl 3]
+	
     add     i, i, 1
     cmp     i, 5
     bne     L7
@@ -127,17 +142,14 @@ L7:
     mov     i, 0
 L8:
     // s[i+j*5]=b[i]^(b[(i+2)%5] & ~b[(i+1)%5]);}
-	// ((i+2)/5)*3 = ((i+2)%5)
     add     v, i, 2
     udiv    v, v, d
-	mul     v, v, d
-	sub     v, i, v
+	msub    v, i, v, d
     ldr     v, [b, v, lsl 3]
     
     add     u, i, 1
     udiv    u, u, d
-	mul     u, u, d
-	sub     u, i, u
+	msub    u, i, u, d
     ldr     u, [b, u, lsl 3]
     
     bic     u, v, u
