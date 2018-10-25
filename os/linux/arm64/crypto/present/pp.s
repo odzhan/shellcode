@@ -1,4 +1,6 @@
 
+// PRESENT in ARM64 assembly
+// 208 bytes
 
 
     .arch armv8-a
@@ -25,16 +27,16 @@ S:
     ldrb    w10, [s, w10, uxtw 0]     // w10 = s[w10]
     ldrb    w11, [s, w11, uxtw 0]     // w11 = s[w11]
     
-	bfi     p, x10, 0, 4              // p[0] = ((x11 << 4) | x10)
+    bfi     p, x10, 0, 4              // p[0] = ((x11 << 4) | x10)
     bfi     p, x11, 4, 4
     
-	ror     p, p, 8                   // p = R(p, 8)
-	ret
+    ror     p, p, 8                   // p = R(p, 8)
+    ret
 	
 present:
     str     lr, [sp, -16]!
     
-	// k0=k[0];k1=k[1];t=x[0];
+    // k0=k[0];k1=k[1];t=x[0];
     ldp     k0, k1, [k]
     ldr     t, [x]
     mov     i, 0
@@ -43,7 +45,7 @@ L0:
     // p=t^k1;
     eor     p, t, k1
 	
-	// F(j,8)((B*)&p)[j]=S(((B*)&p)[j]);
+    // F(j,8)((B*)&p)[j]=S(((B*)&p)[j]);
     mov     j, 8
 L1:
     bl      S
@@ -53,8 +55,8 @@ L1:
     // t=0;r=0x0030002000100000;
     mov     t, 0
     ldr     r, =0x30201000
-	// F(j,64)
-	mov     j, 0
+    // F(j,64)
+    mov     j, 0
 L2:
     // t|=((p>>j)&1)<<(r&255),
     lsr     x10, p, j         // x10 = (p >> j) & 1
@@ -62,7 +64,7 @@ L2:
     lsl     x10, x10, x2      // x10 << r
     orr     t, t, x10         // t |= x10
 	
-	// r=R(r+1,16);
+    // r=R(r+1,16);
     add     r, r, 1           // r = R(r+1, 8) // we only use 32-bits here.
     ror     r, r, 8
     
@@ -71,29 +73,30 @@ L2:
     bne     L2
 
     // k0^=(i+i)+2;
-    add     x10, i, i
-    add     x10, x10, 2
+    add     x10, i, i         // x10 = i + i
+    add     x10, x10, 2       // x10 += 2
     eor     k0, k0, x10
 	
-	// p =(k1<<61)|(k0>>3);
-	lsr     p, k0, 3
+    // p =(k1<<61)|(k0>>3);
+    lsr     p, k0, 3
     orr     p, p, k1, lsl 61
 	
-	// k0=(k0<<61)|(k1>>3);
-	lsl     k0, k0, 61
-	orr     k0, k1, lsr 3
+    // k0=(k0<<61)|(k1>>3);
+    lsr     k1, k1, 3
+    orr     k0, k1, k0, lsl 61
 	
-	// p=R(p,56);
-	ror     p, p, 56
+    // p=R(p,56);
+    ror     p, p, 56
     bl      S
+    mov     k1, p
  
     // i++
     add     i, i, 1
-	// i < 31
+    // i < 31
     cmp     i, 31
     bne     L0
     
-	// x[0] = t ^= k1
+    // x[0] = t ^= k1
     eor     p, t, k1    
     str     p, [x]
 	

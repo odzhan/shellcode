@@ -45,55 +45,50 @@ present:
 	mov	x9, 1048576
 	movk	x9, 0x20, lsl 32
 	mov	x29, sp
-	ldp	x8, x0, [x0]
+	ldp	x8, x3, [x0]
 	mov	x7, x1
-	str	x0, [sp, 24]
+	ldr	x4, [x1]
 	mov	x5, 2
-	ldr	x0, [x1]
 	movk	x9, 0x30, lsl 48
-	str	x0, [sp, 16]
 .L6:
-	ldp	x0, x3, [sp, 16]
-	add	x6, sp, 16
-	mov	w4, 0
-	eor	x0, x0, x3
-	str	x0, [sp, 16]
+	eor	x4, x4, x3
+	add	x6, sp, 24
+	str	x4, [sp, 24]
+	mov	w4, 8
 .L4:
 	ldrb	w0, [x6]
 	bl	S
 	strb	w0, [x6], 1
-	add	w4, w4, 1
-	cmp	w4, 8
+	subs	w4, w4, #1
 	bne	.L4
-	ldr	x1, [sp, 16]
+	ldr	x6, [sp, 24]
 	mov	x0, x9
-	mov	w6, 0
+	mov	w2, 0
 	mov	x4, 0
 .L5:
-	lsr	x2, x1, x6
-	and	x2, x2, 1
-	add	w6, w6, 1
-	lsl	x2, x2, x0
+	lsr	x1, x6, x2
+	and	x1, x1, 1
+	add	w2, w2, 1
+	lsl	x1, x1, x0
 	add	x0, x0, 1
-	orr	x4, x4, x2
-	cmp	w6, 64
+	orr	x4, x4, x1
+	cmp	w2, 64
 	ror	x0, x0, 16
 	bne	.L5
 	eor	x0, x5, x8
 	extr	x8, x0, x3, 3
 	extr	x0, x3, x0, 3
 	ror	x0, x0, 56
-	stp	x4, x0, [sp, 16]
-	bl	S
-	add	x5, x5, 2
-	strb	w0, [sp, 24]
-	cmp	x5, 64
-	ldr	x0, [sp, 24]
-	ror	x0, x0, 8
 	str	x0, [sp, 24]
+	bl	S
+	strb	w0, [sp, 24]
+	add	x5, x5, 2
+	cmp	x5, 64
+	ldr	x3, [sp, 24]
+	ror	x3, x3, 8
 	bne	.L6
-	eor	x0, x0, x4
-	str	x0, [x7]
+	eor	x3, x4, x3
+	str	x3, [x7]
 	ldp	x29, x30, [sp], 32
 	.cfi_restore 30
 	.cfi_restore 29
