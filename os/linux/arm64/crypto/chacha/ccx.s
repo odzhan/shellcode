@@ -130,19 +130,20 @@ L2:
 
     movl w11, 0x61707865
     movl w12, 0x3320646E
-    stp w11, w12, [x2], 8
+    stp w11, w12, [x2]
 
 
     movl w11, 0x79622D32
     movl w12, 0x6B206574
-    stp w11, w12, [x2], 8
+    stp w11, w12, [x2, 8]
 
 
-    mov x8, 12
+    mov x8, 16
 L3:
-    ldr w11, [x1], 4
-    str w11, [x2], 4
-    subs x8, x8, 1
+    ldr w11, [x1, x8]
+    str w11, [x2, x8]
+    add x8, x8, 4
+    cmp x8, 64
     bne L3
 L4:
     ldr lr, [sp], 96

@@ -1,6 +1,6 @@
 
 // ChaCha in ARM64 assembly
-// 332 bytes
+// 344 bytes
 
 	.arch armv8-a
 	.text
@@ -157,19 +157,20 @@ L2:
     // s[0]=0x61707865;s[1]=0x3320646E;
     movl    t, 0x61707865
     movl    u, 0x3320646E
-    stp     t, u, [s], 8
+    stp     t, u, [s]
 	
     // s[2]=0x79622D32;s[3]=0x6B206574;
     movl    t, 0x79622D32
     movl    u, 0x6B206574
-    stp     t, u, [s], 8
+    stp     t, u, [s, 8]
 	
-    // F(12)s[i+4]=k[i];
-    mov     i, 12
+    // F(12)s[i+4]=k[i+4];
+    mov     i, 16 
 L3:
-    ldr     t, [k], 4
-    str     t, [s], 4
-    subs    i, i, 1
+    ldr     t, [k, i]
+    str     t, [s, i]
+    add     i, i, 4
+    cmp     i, 64
     bne     L3
 L4:
     ldr     lr, [sp], 96
