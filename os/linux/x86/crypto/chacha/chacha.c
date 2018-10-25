@@ -66,6 +66,6 @@ void chacha(W l,void*in,void*state){
     } else {
       s[0]=0x61707865;s[1]=0x3320646E;
       s[2]=0x79622D32;s[3]=0x6B206574;
-      F(12)s[i+4]=k[i];
+      F(12)s[i+4]=k[i+4];
     }
 }
