@@ -33,7 +33,7 @@
 #include "../include/macros.h"
 
 typedef struct _cc_ctx {
-    uint8_t iv[32], key[32], ctr[4], nonce[12];
+    uint8_t iv[16], key[32], ctr[4], nonce[12];
 } cc_ctx;
 
 #ifdef __cplusplus

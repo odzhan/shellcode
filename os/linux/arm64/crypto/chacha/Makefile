@@ -1,6 +1,7 @@
 test:
-		yasm -felf32 ccx.asm -occx.o	
-		gcc -m32 -Wall -O2 test.c ccx.o -otest	
+	cpp -E cpp.s > ccx.s
+	as ccx.s -occx.o	
+	gcc -Wall -O2 test.c ccx.o -otest	
 
 clean:
-		rm *.o test
+	rm *.o test
