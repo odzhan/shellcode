@@ -5,13 +5,11 @@
 #define BC_KEY_LENGTH 16
 
 void present(void*mk,void*data);
+#define E present
 
 #define F(a,b)for(a=0;a<b;a++)
-
-typedef unsigned long long W;
+typedef unsigned int W;
 typedef unsigned char B;
-
-#define E present
 
 void lm(B*b,W l,B*k,B*t) {
     W i,j,c;

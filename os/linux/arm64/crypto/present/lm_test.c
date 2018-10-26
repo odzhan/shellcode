@@ -63,9 +63,24 @@ static char *tv_tags[64] =
  "cc680cb4b8b8a9b0", "100160dcfb743c20", "d2ee268ec27309d6", "dcdcba02e6b8a4b3", 
  "100e1ae6ced7fede", "d394ff09dea2010c", "6e4b1fa630d3acc9", "431f7d967c0bc59e"};   
 
+#include <limits.h>
+#include <math.h>
+
+#define CTR_LEN     1 // 8-bits
+#define BLK_LEN     8 // 64-bits
+#define TAG_LEN     8 // 64-bits
+#define BC_KEY_LEN 16 // 128-bits
+
+static unsigned long long maxMLen() {
+  return (log2(BLK_LEN - CTR_LEN) + CTR_LEN * 8) 
+      >= 64 ? ULLONG_MAX : (BLK_LEN - CTR_LEN) * (1ULL << (CTR_LEN * 8));
+}
+
 int main(void) {
-  uint8_t mkey[64], tag[8], mac[8], buf[64];
+  uint8_t mkey[BC_KEY_LEN*2], tag[TAG_LEN], mac[TAG_LEN], buf[64];
   int     i, cnt=0, equ;
+  
+  printf("Max message is %lld bytes\n", maxMLen());
   
   // initialize plaintext
   for (i=0; i<64; i++) buf[i] = i;
@@ -81,7 +96,7 @@ int main(void) {
     print_bytes("result", mac, 8);
     print_bytes("expected", tag, 8);*/
     
-    equ = (memcmp(mac, tag, 8)==0);
+    equ = (memcmp(mac, tag, TAG_LEN)==0);
     
     if (!equ) cnt++;
   }

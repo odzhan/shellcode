@@ -1,34 +1,36 @@
 
-#define COUNTER_LENGTH 1
-#define BLOCK_LENGTH   8
-#define TAG_LENGTH     8
-#define BC_KEY_LENGTH 16
+#define CTR_LEN     1 // 8-bits
+#define BLK_LEN     8 // 64-bits
+#define TAG_LEN     8 // 64-bits
+#define BC_KEY_LEN 16 // 128-bits
+
+#define M_LEN         BLK_LEN-CTR_LEN
 
 void present(void*mk,void*data);
-
-#define F(a,b)for(a=0;a<b;a++)
-
-typedef unsigned long long W;
-typedef unsigned char B;
-
 #define E present
 
+#define F(a,b)for(a=0;a<b;a++)
+typedef unsigned int W;
+typedef unsigned char B;
+
+// max message for current parameters is 1792 bytes
 void lm(B*b,W l,B*k,B*t) {
-    W i,j,c;
-    B m[8];
+    int i,j,s;
+    B   m[BLK_LEN];
 
     // initialize tag T
-    F(i,8)t[i]=0;
+    F(i,TAG_LEN)t[i]=0;
 
-    for(c=1,j=0; l>=7; c++,l-=7) {
-      // add counter S 
-      m[0]=c;
-      // fill M 
-      F(j,7)m[1+j]=*b++;
+    for(s=1,j=0; l>=M_LEN; s++,l-=M_LEN) {
+      // add 8-bit counter S 
+      m[0] = s;
+      // add bytes to M 
+      F(j,M_LEN)
+        m[CTR_LEN+j]=*b++;
       // encrypt M with K1
       E(k,m);
       // update T
-      F(i,8)t[i]^=m[i];
+      F(i,TAG_LEN)t[i]^=m[i];
     }
     // copy remainder of input
     F(i,l)m[i]=b[i];
@@ -37,6 +39,6 @@ void lm(B*b,W l,B*k,B*t) {
     // update T 
     F(i,l+1)t[i]^=m[i];
     // encrypt T with K2
-    k+=16;
+    k+=BC_KEY_LEN;
     E(k,t);
 }
