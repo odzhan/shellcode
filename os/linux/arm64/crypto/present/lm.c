@@ -72,42 +72,7 @@ static char *tv_tags[64] =
 typedef unsigned long long W;
 typedef unsigned char B;
 
-void BCEncrypt(uint8_t key[16], uint8_t input[8]);
-  
 #define E present
-
-void lm2(B*b,W l,B*k,B*t) {
-	W i,j,c;
-	//struct{B c;B b[7];}m;
-  B m[BLOCK_LENGTH];
-  
-	F(i,BLOCK_LENGTH)t[i]=0;
-	c=1;i=0;
-
-	while(l >= (BLOCK_LENGTH - COUNTER_LENGTH)) {
-    m[0] = c;
-    
-    // add data to block
-    F(i, (BLOCK_LENGTH - COUNTER_LENGTH)) {
-      m[COUNTER_LENGTH + i] = b[i];
-    }
-    // encrypt block
-    E(k,m);
-    
-    // update tag
-    F(i,BLOCK_LENGTH) t[i]^=m[i];
-    
-    l -= (BLOCK_LENGTH - COUNTER_LENGTH);
-    b += (BLOCK_LENGTH - COUNTER_LENGTH);
-    c++;
-	}
-  for(i=0;i<l;i++) m[i] = b[i];
-	m[i]=0x80;
-  for(i=l+1;i<BLOCK_LENGTH;i++) m[i] = 0;
-	for(i=0;i<BLOCK_LENGTH;i++) t[i] ^= m[i];
-	k += BC_KEY_LENGTH;
-	E(k,t);
-}
 
 void lm(B*b,W l,B*k,B*t) {
     W i,j,c;
@@ -139,83 +104,6 @@ void lm(B*b,W l,B*k,B*t) {
     E(k,t);
 }
 
-void encodeCounter(unsigned int counter, uint8_t* output) {
-  int i;
-  for(i = COUNTER_LENGTH-1; i>=0; i--) {
-    output[i] = counter;
-    counter >>= 8;
-  }
-}
-
-void lightmac(uint8_t* message, W messageLength, uint8_t* key,uint8_t* output) {
-  // Intermediate values used to store computations
-  uint8_t value[BLOCK_LENGTH];
-  uint8_t blockInput[BLOCK_LENGTH];
-  uint8_t blockOutput[BLOCK_LENGTH];
-  
-  W counter;
-  unsigned int i;
-
-  for(i = 0; i < BLOCK_LENGTH; i++) {
-    blockOutput[i]=blockInput[i]=value[i] = 0;
-  }
-
-  // Note: the counter starts at 1, not 0.
-  counter = 1;
-  
-  // We stop the moment we are left with a message of length less than
-  // BLOCK_LENGTH-COUNTER_LENGTH, after which padding occurs.
-  while(messageLength >= (BLOCK_LENGTH - COUNTER_LENGTH)) {
-
-    encodeCounter(counter, blockInput);
-
-    // Appending BLOCK_LENGTH-COUNTER_LENGTH bytes of the message to
-    // the counter to form a byte string of length BLOCK_LENGTH.
-    for(i = 0; i < (BLOCK_LENGTH - COUNTER_LENGTH); i++) {
-      blockInput[i+COUNTER_LENGTH] = message[i];
-    }
-
-    E(key, blockInput);
-
-    // XORing the block cipher output to the previously XORed block
-    // cipher outputs.
-    for(i = 0; i < BLOCK_LENGTH; i++) {
-      value[i] ^= blockInput[i];
-    }
-    messageLength -= (BLOCK_LENGTH - COUNTER_LENGTH);
-    message       += (BLOCK_LENGTH - COUNTER_LENGTH);
-    counter++;
-  }
-
-  // Copying the remaining part of the message, and then applying
-  // padding.
-  for(i = 0; i < messageLength; i++) {
-    blockInput[i] = message[i];
-  }
-  // Padding step 1: appending a '1'
-  blockInput[messageLength] = 0x80;
-  // Padding step 2: append as many zeros as necessary to complete the
-  // block.
-  for(i = messageLength+1; i < BLOCK_LENGTH; i++) {
-    blockInput[i] = 0x00;
-  }
-
-  // Xoring the final block with the sum of the previous block cipher
-  // outputs
-  for(i = 0; i < BLOCK_LENGTH; i++) {
-    value[i] ^= blockInput[i];
-  }
-
-  // Using the second part of the key for the final block cipher call.
-  key += BC_KEY_LENGTH;
-  E(key, value);
-  
-  // Truncation is performed to the most significant bits. We assume big endian encoding.
-  for(i = 0; i < TAG_LENGTH; i++) {
-    output[i] = value[i];
-  }
-}
-
 int main(void) {
   B   mkey[64], tag[8], mac[8], buf[64];
   int i, cnt=0, equ;
@@ -230,9 +118,9 @@ int main(void) {
     hex2bin(tag, tv_tags[i]);
     lm(buf, i, mkey, mac);
     
-    printf("input length %i\n", i);
+    /*printf("input length %i\n", i);
     print_bytes("result", mac, 8);
-    print_bytes("expected", tag, 8);
+    print_bytes("expected", tag, 8);*/
     
     equ = (memcmp(mac, tag, 8)==0);
     
