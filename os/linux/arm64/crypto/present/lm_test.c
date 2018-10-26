@@ -63,11 +63,6 @@ static char *tv_tags[64] =
  "cc680cb4b8b8a9b0", "100160dcfb743c20", "d2ee268ec27309d6", "dcdcba02e6b8a4b3", 
  "100e1ae6ced7fede", "d394ff09dea2010c", "6e4b1fa630d3acc9", "431f7d967c0bc59e"};   
 
-#define COUNTER_LENGTH 1
-#define BLOCK_LENGTH   8
-#define TAG_LENGTH     8
-#define BC_KEY_LENGTH 16
-
 int main(void) {
   uint8_t mkey[64], tag[8], mac[8], buf[64];
   int     i, cnt=0, equ;
