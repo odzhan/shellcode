@@ -82,22 +82,22 @@ void lm(B*b,W l,B*k,B*t) {
     F(i,8)t[i]=0;
 
     for(c=1,j=0; l>=7; c++,l-=7) {
-      // set counter
+      // add counter S 
       m[0]=c;
-      // fill block
+      // fill M 
       F(j,7)m[1+j]=*b++;
-      // encrypt block with K1
+      // encrypt M with K1
       E(k,m);
-      // update tag
+      // update T
       F(i,8)t[i]^=m[i];
     }
     // copy remainder of input
     F(i,l)m[i]=b[i];
     // add end bit
     m[i]=0x80;
-    // update tag
+    // update T 
     F(i,l+1)t[i]^=m[i];
-    // encrypt tag with K2
+    // encrypt T with K2
     k+=16;
     E(k,t);
 }
