@@ -80,8 +80,6 @@ void lm(B*b,W l,B*k,B*t) {
 
     // initialize tag T
     F(i,8)t[i]=0;
-    // initialize counter S
-    c=1;j=0;
 
     for(c=1,j=0; l>=7; c++,l-=7) {
       // set counter
