@@ -62,11 +62,6 @@ L2:
     cmp     j, 64             // j < 64
     bne     L2
 
-    // k0^=(i+i)+2;
-    add     x10, i, i         // x10 = i + i
-    add     x10, x10, 2       // x10 += 2
-    eor     k0, k0, x10
-    
     // p =(k1<<61)|(k0>>3);
     lsr     p, k0, 3
     orr     p, p, k1, lsl 61
@@ -79,7 +74,9 @@ L2:
     ror     p, p, 56
     bl      S
     mov     k1, p
- 
+
+    // k1^= (((i+1)&3)<<62);
+     
     // i++
     add     i, i, 1
     // i < 31
