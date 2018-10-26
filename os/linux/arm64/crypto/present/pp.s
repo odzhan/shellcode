@@ -21,7 +21,7 @@ present:
     str     lr, [sp, -16]!
     
     // k0=k[0];k1=k[1];t=x[0];
-    ldp     k0, k1, [k]
+    ldp     k1, k0, [k]
     ldr     t, [x]
 
     // only dinosaurs use big endian convention

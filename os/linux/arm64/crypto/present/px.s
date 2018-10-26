@@ -17,7 +17,7 @@ present:
     str lr, [sp, -16]!
 
 
-    ldp x5, x6, [x0]
+    ldp x6, x5, [x0]
     ldr x4, [x1]
 
 
