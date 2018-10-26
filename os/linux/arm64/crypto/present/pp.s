@@ -1,6 +1,6 @@
 
 // PRESENT in ARM64 assembly
-// 208 bytes
+// 224 bytes
 
     .arch armv8-a
     .text
@@ -23,7 +23,12 @@ present:
     // k0=k[0];k1=k[1];t=x[0];
     ldp     k0, k1, [k]
     ldr     t, [x]
-    
+
+    // only dinosaurs use big endian convention
+    rev     k0, k0
+    rev     k1, k1
+    rev     t, t
+ 
     mov     i, 0
     adr     s, sbox
 L0:
@@ -82,7 +87,8 @@ L2:
     bne     L0
     
     // x[0] = t ^= k1
-    eor     p, t, k1    
+    eor     p, t, k1 
+    rev     p, p   
     str     p, [x]
     
     ldr     lr, [sp], 16

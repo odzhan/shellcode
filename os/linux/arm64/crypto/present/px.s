@@ -9,30 +9,22 @@
 
 
 
-
     .arch armv8-a
     .text
     .global present
-# 23 "pp.s"
-S:
-    ubfx x10, x3, 0, 4
-    ubfx x11, x3, 4, 4
-
-    ldrb w10, [x9, w10, uxtw 0]
-    ldrb w11, [x9, w11, uxtw 0]
-
-    bfi x3, x10, 0, 4
-    bfi x3, x11, 4, 4
-
-    ror x3, x3, 8
-    ret
-
+# 20 "pp.s"
 present:
     str lr, [sp, -16]!
 
 
     ldp x5, x6, [x0]
     ldr x4, [x1]
+
+
+    rev x5, x5
+    rev x6, x6
+    rev x4, x4
+
     mov x7, 0
     adr x9, sbox
 L0:
@@ -92,11 +84,24 @@ L2:
 
 
     eor x3, x4, x6
+    rev x3, x3
     str x3, [x1]
 
     ldr lr, [sp], 16
     ret
 
+S:
+    ubfx x10, x3, 0, 4
+    ubfx x11, x3, 4, 4
+
+    ldrb w10, [x9, w10, uxtw 0]
+    ldrb w11, [x9, w11, uxtw 0]
+
+    bfi x3, x10, 0, 4
+    bfi x3, x11, 4, 4
+
+    ror x3, x3, 8
+    ret
 sbox:
     .byte 0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd
     .byte 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1, 0x2
