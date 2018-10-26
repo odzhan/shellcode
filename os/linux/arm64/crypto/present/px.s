@@ -17,7 +17,7 @@ present:
     str lr, [sp, -16]!
 
 
-    ldp x6, x5, [x0]
+    ldp x5, x6, [x0]
     ldr x4, [x1]
 
 
@@ -29,12 +29,13 @@ present:
     adr x9, sbox
 L0:
 
-    eor x3, x4, x6
+    eor x3, x4, x5
 
 
     mov x8, 8
 L1:
     bl S
+    ror x3, x3, 8
     subs x8, x8, 1
     bne L1
 
@@ -59,31 +60,34 @@ L2:
     bne L2
 
 
-    add x10, x7, x7
-    add x10, x10, 2
-    eor x5, x5, x10
+    lsr x3, x6, 3
+    orr x3, x3, x5, lsl 61
 
 
-    lsr x3, x5, 3
-    orr x3, x3, x6, lsl 61
-
-
-    lsr x6, x6, 3
-    orr x5, x6, x5, lsl 61
+    lsr x5, x5, 3
+    orr x6, x5, x6, lsl 61
 
 
     ror x3, x3, 56
     bl S
-    mov x6, x3
 
 
     add x7, x7, 1
+
+
+    lsr x10, x7, 2
+    eor x5, x10, x3, ror 8
+
+
+    and x10, x7, 3
+    eor x6, x6, x10, lsl 62
+
 
     cmp x7, 31
     bne L0
 
 
-    eor x3, x4, x6
+    eor x3, x4, x5
     rev x3, x3
     str x3, [x1]
 
@@ -100,7 +104,6 @@ S:
     bfi x3, x10, 0, 4
     bfi x3, x11, 4, 4
 
-    ror x3, x3, 8
     ret
 sbox:
     .byte 0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd

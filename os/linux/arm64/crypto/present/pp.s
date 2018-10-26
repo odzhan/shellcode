@@ -21,7 +21,7 @@ present:
     str     lr, [sp, -16]!
     
     // k0=k[0];k1=k[1];t=x[0];
-    ldp     k1, k0, [k]
+    ldp     k0, k1, [k]
     ldr     t, [x]
 
     // only dinosaurs use big endian convention
@@ -32,13 +32,14 @@ present:
     mov     i, 0
     adr     s, sbox
 L0:
-    // p=t^k1;
-    eor     p, t, k1
+    // p=t^k0;
+    eor     p, t, k0
     
     // F(j,8)((B*)&p)[j]=S(((B*)&p)[j]);
     mov     j, 8
 L1:
     bl      S
+    ror     p, p, 8
     subs    j, j, 1
     bne     L1
 
@@ -62,29 +63,35 @@ L2:
     cmp     j, 64             // j < 64
     bne     L2
 
-    // p =(k1<<61)|(k0>>3);
-    lsr     p, k0, 3
-    orr     p, p, k1, lsl 61
+    // p =(k0<<61)|(k1>>3);
+    lsr     p, k1, 3
+    orr     p, p, k0, lsl 61
     
-    // k0=(k0<<61)|(k1>>3);
-    lsr     k1, k1, 3
-    orr     k0, k1, k0, lsl 61
+    // k1=(k1<<61)|(k0>>3);
+    lsr     k0, k0, 3
+    orr     k1, k0, k1, lsl 61
     
     // p=R(p,56);
     ror     p, p, 56
     bl      S
-    mov     k1, p
 
-    // k1^= (((i+1)&3)<<62);
-     
     // i++
     add     i, i, 1
+
+    // k0=R(p,8)^((i+1)>>2);
+    lsr     x10, i, 2
+    eor     k0, x10, p, ror 8
+
+    // k1^= (((i+1)&3)<<62);
+    and     x10, i, 3
+    eor     k1, k1, x10, lsl 62
+     
     // i < 31
     cmp     i, 31
     bne     L0
     
-    // x[0] = t ^= k1
-    eor     p, t, k1 
+    // x[0] = t ^= k0
+    eor     p, t, k0 
     rev     p, p   
     str     p, [x]
     
@@ -101,7 +108,6 @@ S:
     bfi     p, x10, 0, 4              // p[0] = ((x11 << 4) | x10)
     bfi     p, x11, 4, 4
     
-    ror     p, p, 8                   // p = R(p, 8)
     ret
 sbox:
     .byte 0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd
