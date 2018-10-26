@@ -41,14 +41,6 @@ B S(B x) {
   return (sbox[(x&0xF0)>>4]<<4)|sbox[(x&0x0F)];
 }
 
-static inline void uint64ToUint8Array(W input, B output[8]) {
-  int i;
-  for(i = 7; i >= 0; i--) {
-    output[i] = (B) input;
-    input >>= 8;
-  }
-}
-
 #define rev __builtin_bswap64
 
 void present(void*mk,void*data) {
@@ -63,15 +55,14 @@ void present(void*mk,void*data) {
       F(j,64)
         t|=((p>>j)&1)<<(r&255),
         r=R(r+1,16);
-      
-      k1^=(i+i)+2;
       p =(k0<<61)|(k1>>3);
       k1=(k1<<61)|(k0>>3);
       p=R(p,56);
       ((B*)&p)[0]=S(((B*)&p)[0]);
       k0=R(p,8);
+      k1^= (((i+1)& 3)<<62);
+	    k0^= ( (i+1)>>2);
     }
     x[0] = rev(t^k0);
-    //uint64ToUint8Array(t^k0, (B*)&x[0]);
 }
 

@@ -36,6 +36,7 @@ uint8_t *tv[2]={k00_t00, kff_tff};
 
 int main(void)
 {
+  uint8_t out[8];
   uint8_t buf[8]=
     { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };  // 64-bit plaintext
   
@@ -49,7 +50,7 @@ int main(void)
   int     i, equ;
   
   present(key, buf);
-  //print_bytes("result", buf, 8);
+  print_bytes("result", buf, 8);
   
   equ = (memcmp(buf, res, 8)==0);
   printf("PRESENT encryption %s\n", equ ? "OK" : "FAILED");
@@ -60,7 +61,7 @@ int main(void)
     memset(buf, -i, sizeof(buf));
   
     present(key, buf);
-    //print_bytes("result", buf, 8);
+    print_bytes("result", buf, 8);
     
     equ = memcmp (buf, tv[i], 8)==0;
     printf ("Encryption test #%i %s\n", (i+1), 
