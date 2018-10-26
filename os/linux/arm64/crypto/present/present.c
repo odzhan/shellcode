@@ -27,41 +27,42 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#include "present.h"
-
 #define R(v,n)(((v)>>(n))|((v)<<(64-(n))))
 #define F(a,b)for(a=0;a<b;a++)
 
 typedef unsigned long long W;
 typedef unsigned char B;
 
-B S(B x) {
-  B s[16] =
+B sbox[16] =
   {0xc,0x5,0x6,0xb,0x9,0x0,0xa,0xd,
    0x3,0xe,0xf,0x8,0x4,0x7,0x1,0x2 };
 
-  return (s[(x&0xF0)>>4]<<4)|s[(x&0x0F)];
+B S(B x) {
+  return (sbox[(x&0xF0)>>4]<<4)|sbox[(x&0x0F)];
 }
 
+#define rev __builtin_bswap64
+
 void present(void*mk,void*data) {
-    W   r,p,t,k0,k1,*k=(W*)mk,*x=(W*)data;
-    int i,j;
+    W i,j,r,p,t,t2,k0,k1,*k=(W*)mk,*x=(W*)data;
     
-    k0=k[0];k1=k[1];t=x[0];
+    k0=rev(k[0]); k1=rev(k[1]);t=rev(x[0]);
+  
     F(i,32-1) {
-      p=t^k1;
+      p=t^k0;
       F(j,8)((B*)&p)[j]=S(((B*)&p)[j]);
       t=0;r=0x0030002000100000;
       F(j,64)
         t|=((p>>j)&1)<<(r&255),
         r=R(r+1,16);
-      k0^=(i+i)+2;
-      p =(k1<<61)|(k0>>3);
-      k0=(k0<<61)|(k1>>3);
+      
+      k1^=(i+i)+2;
+      p =(k0<<61)|(k1>>3);
+      k1=(k1<<61)|(k0>>3);
       p=R(p,56);
       ((B*)&p)[0]=S(((B*)&p)[0]);
-      k1=R(p,8);
+      k0=R(p,8);
     }
-    x[0]=t^k1;
+    x[0] = t^k0;
 }
 

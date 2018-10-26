@@ -4,8 +4,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "present.h"
+void present(void*,void*);
 
 void print_bytes(char *s, void *p, int len) {
   int i;
@@ -28,11 +29,26 @@ uint8_t kff_tff[]=
 
 uint8_t *tv[2]={k00_t00, kff_tff};
 
+// 1234567887654321abab1234dfec2f3c
+// badc0ffeebadf00d
+
 int main(void)
 {
-  uint8_t     buf[8];   // 64-bit plaintext
-  uint8_t     key[16];  // 128-bit key
-  int         i, equ;
+  uint8_t buf[8]=
+    { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };  // 64-bit plaintext
+  
+  uint8_t key[16]=
+    { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 
+      0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };  // 128-bit key
+  
+  uint8_t res[8]=
+    { 0xd6, 0x1d, 0x67, 0x5e, 0x68, 0x28, 0x9d, 0x0e };  // 64-bit ciphertext 
+  
+  int     i, equ;
+  
+  present(key, buf);
+  equ = (memcmp(buf, res, 8)==0);
+  printf("PRESENT encryption %s\n", equ ? "OK" : "FAILED");
   
   for (i=0; i<2; i++) {
     // if using alternative test vectors, remember to change these!
@@ -40,9 +56,6 @@ int main(void)
     memset(buf, -i, sizeof(buf));
   
     present(key, buf);
-    
-    print_bytes("ciphertext", tv[i], 8);
-    print_bytes("result", buf, 8);
     
     equ = memcmp (buf, tv[i], 8)==0;
     printf ("Encryption test #%i %s\n", (i+1), 

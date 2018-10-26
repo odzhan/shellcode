@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>/home/user/hub/shellcode/os/linux/arm64/crypto/present/pp.s.html</title>
+<meta name="Generator" content="Vim/8.0">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="arm">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
+<meta name="colorscheme" content="none">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #ffffff; background-color: #000000; }
+body { font-family: monospace; color: #ffffff; background-color: #000000; }
+* { font-size: 1em; }
+.Constant { color: #ff40ff; }
+.Comment { color: #00ffff; }
+.Type { color: #87ffaf; }
+.Identifier { color: #00ffff; font-weight: bold; }
+.Statement { color: #ffff00; }
+.PreProc { color: #5fd7ff; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+
+<span class="Comment">// PRESENT in ARM64 assembly</span>
+<span class="Comment">// 208 bytes</span>
+
+
+    <span class="PreProc">.arch</span> <span class="Identifier">armv8</span><span class="Statement">-</span><span class="Identifier">a</span>
+    <span class="PreProc">.text</span>
+    <span class="PreProc">.global</span> <span class="Identifier">present</span>
+
+<span class="Identifier">    #define</span> <span class="Identifier">k</span>  <span class="Type">x0</span>
+<span class="Identifier">    #define</span> <span class="Identifier">x</span>  <span class="Type">x1</span>
+<span class="Identifier">    #define</span> <span class="Identifier">r</span>  <span class="Type">w2</span>
+<span class="Identifier">    #define</span> <span class="Identifier">p</span>  <span class="Type">x3</span>
+<span class="Identifier">    #define</span> <span class="Identifier">t</span>  <span class="Type">x4</span>
+<span class="Identifier">    #define</span> <span class="Identifier">k0</span> <span class="Type">x5</span>
+<span class="Identifier">    #define</span> <span class="Identifier">k1</span> <span class="Type">x6</span>
+<span class="Identifier">    #define</span> <span class="Identifier">i</span>  <span class="Type">x7</span>
+<span class="Identifier">    #define</span> <span class="Identifier">j</span>  <span class="Type">x8</span>
+<span class="Identifier">    #define</span> <span class="Identifier">s</span>  <span class="Type">x9</span>
+
+<span class="Identifier">present:</span>
+    <span class="Statement">str</span>     <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span><span class="Statement">,</span> <span class="Statement">-</span><span class="Constant">16</span>]<span class="Statement">!</span>
+
+    <span class="Comment">// k0=k[0];k1=k[1];t=x[0];</span>
+    <span class="Statement">ldp</span>     <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Identifier">k1</span><span class="Statement">,</span> [<span class="Identifier">k</span>]
+    <span class="Statement">ldr</span>     <span class="Identifier">t</span><span class="Statement">,</span> [<span class="Identifier">x</span>]
+
+    <span class="Statement">mov</span>     <span class="Identifier">i</span><span class="Statement">,</span> <span class="Constant">0</span>
+    <span class="Statement">adr</span>     <span class="Identifier">s</span><span class="Statement">,</span> <span class="Identifier">sbox</span>
+<span class="Identifier">L0:</span>
+    <span class="Comment">// p=t^k1;</span>
+    <span class="Statement">eor</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">t</span><span class="Statement">,</span> <span class="Identifier">k1</span>
+
+    <span class="Comment">// F(j,8)((B*)&amp;p)[j]=S(((B*)&amp;p)[j]);</span>
+    <span class="Statement">mov</span>     <span class="Identifier">j</span><span class="Statement">,</span> <span class="Constant">8</span>
+<span class="Identifier">L1:</span>
+    <span class="Statement">bl</span>      <span class="Identifier">S</span>
+    <span class="Statement">subs</span>    <span class="Identifier">j</span><span class="Statement">,</span> <span class="Identifier">j</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Statement">bne</span>     <span class="Identifier">L1</span>
+
+    <span class="Comment">// t=0;r=0x0030002000100000;</span>
+    <span class="Statement">mov</span>     <span class="Identifier">t</span><span class="Statement">,</span> <span class="Constant">0</span>
+    <span class="Statement">ldr</span>     <span class="Identifier">r</span><span class="Statement">,</span> <span class="Statement">=</span><span class="Constant">0x30201000</span>
+    <span class="Comment">// F(j,64)</span>
+    <span class="Statement">mov</span>     <span class="Identifier">j</span><span class="Statement">,</span> <span class="Constant">0</span>
+<span class="Identifier">L2:</span>
+    <span class="Comment">// t|=((p&gt;&gt;j)&amp;1)&lt;&lt;(r&amp;255),</span>
+    <span class="Statement">lsr</span>     <span class="Type">x10</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">j</span>         <span class="Comment">// x10 = (p &gt;&gt; j) &amp; 1</span>
+    <span class="Statement">and</span>     <span class="Type">x10</span><span class="Statement">,</span> <span class="Type">x10</span><span class="Statement">,</span> <span class="Constant">1</span>       <span class="Comment">// </span>
+    <span class="Statement">lsl</span>     <span class="Type">x10</span><span class="Statement">,</span> <span class="Type">x10</span><span class="Statement">,</span> <span class="Type">x2</span>      <span class="Comment">// x10 &lt;&lt; r</span>
+    <span class="Statement">orr</span>     <span class="Identifier">t</span><span class="Statement">,</span> <span class="Identifier">t</span><span class="Statement">,</span> <span class="Type">x10</span>         <span class="Comment">// t |= x10</span>
+
+    <span class="Comment">// r=R(r+1,16);</span>
+    <span class="Statement">add</span>     <span class="Identifier">r</span><span class="Statement">,</span> <span class="Identifier">r</span><span class="Statement">,</span> <span class="Constant">1</span>           <span class="Comment">// r = R(r+1, 8)</span>
+    <span class="Statement">ror</span>     <span class="Identifier">r</span><span class="Statement">,</span> <span class="Identifier">r</span><span class="Statement">,</span> <span class="Constant">8</span>
+
+    <span class="Statement">add</span>     <span class="Identifier">j</span><span class="Statement">,</span> <span class="Identifier">j</span><span class="Statement">,</span> <span class="Constant">1</span>           <span class="Comment">// j++</span>
+    <span class="Statement">cmp</span>     <span class="Identifier">j</span><span class="Statement">,</span> <span class="Constant">64</span>             <span class="Comment">// j &lt; 64</span>
+    <span class="Statement">bne</span>     <span class="Identifier">L2</span>
+
+    <span class="Comment">// k0^=(i+i)+2;</span>
+    <span class="Statement">add</span>     <span class="Type">x10</span><span class="Statement">,</span> <span class="Identifier">i</span><span class="Statement">,</span> <span class="Identifier">i</span>         <span class="Comment">// x10 = i + i</span>
+    <span class="Statement">add</span>     <span class="Type">x10</span><span class="Statement">,</span> <span class="Type">x10</span><span class="Statement">,</span> <span class="Constant">2</span>       <span class="Comment">// x10 += 2</span>
+    <span class="Statement">eor</span>     <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Type">x10</span>
+
+    <span class="Comment">// p =(k1&lt;&lt;61)|(k0&gt;&gt;3);</span>
+    <span class="Statement">lsr</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Constant">3</span>
+    <span class="Statement">orr</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">k1</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">61</span>
+
+    <span class="Comment">// k0=(k0&lt;&lt;61)|(k1&gt;&gt;3);</span>
+    <span class="Statement">lsr</span>     <span class="Identifier">k1</span><span class="Statement">,</span> <span class="Identifier">k1</span><span class="Statement">,</span> <span class="Constant">3</span>
+    <span class="Statement">orr</span>     <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Identifier">k1</span><span class="Statement">,</span> <span class="Identifier">k0</span><span class="Statement">,</span> <span class="Statement">lsl</span> <span class="Constant">61</span>
+
+    <span class="Comment">// p=R(p,56);</span>
+    <span class="Statement">ror</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Constant">56</span>
+    <span class="Statement">bl</span>      <span class="Identifier">S</span>
+    <span class="Statement">mov</span>     <span class="Identifier">k1</span><span class="Statement">,</span> <span class="Identifier">p</span>
+
+    <span class="Comment">// i++</span>
+    <span class="Statement">add</span>     <span class="Identifier">i</span><span class="Statement">,</span> <span class="Identifier">i</span><span class="Statement">,</span> <span class="Constant">1</span>
+    <span class="Comment">// i &lt; 31</span>
+    <span class="Statement">cmp</span>     <span class="Identifier">i</span><span class="Statement">,</span> <span class="Constant">31</span>
+    <span class="Statement">bne</span>     <span class="Identifier">L0</span>
+
+    <span class="Comment">// x[0] = t ^= k1</span>
+    <span class="Statement">eor</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">t</span><span class="Statement">,</span> <span class="Identifier">k1</span>
+    <span class="Statement">str</span>     <span class="Identifier">p</span><span class="Statement">,</span> [<span class="Identifier">x</span>]
+
+    <span class="Statement">ldr</span>     <span class="Type">lr</span><span class="Statement">,</span> [<span class="Type">sp</span>]<span class="Statement">,</span> <span class="Constant">16</span>
+    <span class="Statement">ret</span>
+
+<span class="Identifier">S:</span>
+    <span class="Statement">ubfx</span>    <span class="Type">x10</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Constant">4</span>              <span class="Comment">// x10 = (p &amp; 0x0F)</span>
+    <span class="Statement">ubfx</span>    <span class="Type">x11</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Constant">4</span><span class="Statement">,</span> <span class="Constant">4</span>              <span class="Comment">// x11 = (p &amp; 0xF0) &gt;&gt; 4</span>
+
+    <span class="Statement">ldrb</span>    <span class="Type">w10</span><span class="Statement">,</span> [<span class="Identifier">s</span><span class="Statement">,</span> <span class="Type">w10</span><span class="Statement">,</span> <span class="Statement">uxtw</span> <span class="Constant">0</span>]     <span class="Comment">// w10 = s[w10]</span>
+    <span class="Statement">ldrb</span>    <span class="Type">w11</span><span class="Statement">,</span> [<span class="Identifier">s</span><span class="Statement">,</span> <span class="Type">w11</span><span class="Statement">,</span> <span class="Statement">uxtw</span> <span class="Constant">0</span>]     <span class="Comment">// w11 = s[w11]</span>
+
+    <span class="Statement">bfi</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Type">x10</span><span class="Statement">,</span> <span class="Constant">0</span><span class="Statement">,</span> <span class="Constant">4</span>              <span class="Comment">// p[0] = ((x11 &lt;&lt; 4) | x10)</span>
+    <span class="Statement">bfi</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Type">x11</span><span class="Statement">,</span> <span class="Constant">4</span><span class="Statement">,</span> <span class="Constant">4</span>
+
+    <span class="Statement">ror</span>     <span class="Identifier">p</span><span class="Statement">,</span> <span class="Identifier">p</span><span class="Statement">,</span> <span class="Constant">8</span>                   <span class="Comment">// p = R(p, 8)</span>
+    <span class="Statement">ret</span>
+<span class="Identifier">sbox:</span>
+    <span class="PreProc">.byte</span> <span class="Constant">0xc</span><span class="Statement">,</span> <span class="Constant">0x5</span><span class="Statement">,</span> <span class="Constant">0x6</span><span class="Statement">,</span> <span class="Constant">0xb</span><span class="Statement">,</span> <span class="Constant">0x9</span><span class="Statement">,</span> <span class="Constant">0x0</span><span class="Statement">,</span> <span class="Constant">0xa</span><span class="Statement">,</span> <span class="Constant">0xd</span>
+    <span class="PreProc">.byte</span> <span class="Constant">0x3</span><span class="Statement">,</span> <span class="Constant">0xe</span><span class="Statement">,</span> <span class="Constant">0xf</span><span class="Statement">,</span> <span class="Constant">0x8</span><span class="Statement">,</span> <span class="Constant">0x4</span><span class="Statement">,</span> <span class="Constant">0x7</span><span class="Statement">,</span> <span class="Constant">0x1</span><span class="Statement">,</span> <span class="Constant">0x2</span>
+
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
