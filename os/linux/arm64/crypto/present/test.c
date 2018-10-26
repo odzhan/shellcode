@@ -36,7 +36,6 @@ uint8_t *tv[2]={k00_t00, kff_tff};
 
 int main(void)
 {
-  uint8_t out[8];
   uint8_t buf[8]=
     { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };  // 64-bit plaintext
   
