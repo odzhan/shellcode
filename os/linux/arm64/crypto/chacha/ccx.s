@@ -28,9 +28,9 @@ P1:
 
     // a=(d&15);b=(d>>4&15);
     // c=(d>>8&15);d>>=12;
-    ubfx    w4, w12, 0, 4
-    ubfx    w5, w12, 4, 4
-    ubfx    w6, w12, 8, 4
+    ubfx    w4, w12,  0, 4
+    ubfx    w5, w12,  4, 4
+    ubfx    w6, w12,  8, 4
     ubfx    w7, w12, 12, 4
 
     movl    w10, 0x19181410

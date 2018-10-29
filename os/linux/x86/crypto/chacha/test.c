@@ -55,9 +55,10 @@ uint8_t output[]=
   0x87,0x4d };
 
 int main (void) {
-  cc_ctx   p, s;
+  cc_ctx   s;
   int      ctr = 1, equ, i;
   uint32_t *r=(uint32_t*)&s;
+  struct {uint8_t key[32]; uint8_t ctr[4]; uint8_t nonce[12];}p;
   
   memset(&s, 0, sizeof(s));
 

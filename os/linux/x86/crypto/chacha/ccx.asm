@@ -30,7 +30,7 @@
 ; -----------------------------------------------
 ; ChaCha20 stream cipher in x86 assembly
 ;
-; size: 180 bytes
+; size: 179 bytes
 ;
 ; global calls use cdecl convention
 ;
@@ -69,7 +69,7 @@ _chacha:
     jnz    L0   
 
     xchg   eax, edi
-    lea    esi, [ebx+32] 
+    mov    esi, ebx
     ; copy "expand 32-byte k" into state
     mov    eax, 0x61707865
     stosd
