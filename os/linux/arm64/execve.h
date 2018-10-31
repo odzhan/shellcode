@@ -1,6 +1,3 @@
-
-checking arm
-added 1 modes
 // Target architecture : ARMv8/AArch64 arm
 // Endian mode         : little
 

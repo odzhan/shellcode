@@ -1,10 +1,7 @@
-
-checking arm
-added 1 modes
 // Target architecture : ARMv8/AArch64 arm
 // Endian mode         : little
 
-#define CMD_SIZE 83
+#define CMD_SIZE 64 
 
 char CMD[] = {
   /* 0000 */ "\xe0\x45\x8c\xd2" /* movz   x0, #0x622f                    */
@@ -23,9 +20,4 @@ char CMD[] = {
   /* 0034 */ "\xe1\x83\x00\x91" /* add    x1, sp, #0x20                  */
   /* 0038 */ "\xa8\x1b\x80\xd2" /* movz   x8, #0xdd                      */
   /* 003C */ "\x01\x00\x00\xd4" /* svc    #0                             */
-  /* 0040 */ "\x65\x63\x68\x6f" /* umlsl2 v5.4s, v27.8h, v8.h[2]         */
-  /* 0044 */ "\x20\x48\x65\x6c" /* ldnp   d0, d18, [x1, #-0x1b0]         */
-  /* 004C */ "\x6c\x6f\x2c\x20"
-  /* 0048 */ "\x57\x6f\x72\x6c" /* ldnp   d23, d27, [x26, #-0xe0]        */
-  /* 004F */ "\x64\x21\x00"    
 };
