@@ -119,7 +119,7 @@ cc_v:
 			
     // void chacha(W l, void *in, void *state);
 chacha:
-    str     lr, [sp, -96]!
+    str     x30, [sp, -96]!
 
     cbz     l, L2
 
@@ -174,5 +174,5 @@ L3:
     cmp     i, 64
     bne     L3
 L4:
-    ldr     lr, [sp], 96
+    ldr     x30, [sp], 96
     ret
