@@ -46,53 +46,37 @@
                 
 ; instead of subtracting, add 2^255+19
 modulo:
-                %define x0 rbx
-                %define x1 rsi
-                %define x2 rbp
-                %define x3 rdi
-                
-                %define x4 r8
-                %define x5 r9
-                %define x6 r10
-                %define x7 r11
-                
                 pushad
+                mov     esi, [esp+32+4] ; edi = x
+                ; u8 t[32]
+                pushad
+                mov     edi, esp
+                xor     ecx, ecx
+                mul     ecx
+                ; memcpy(t, x, 32)
+                mov     cl, 32
+                rep     movsb
+L0:
+                mov     ebx, esp            ; ebx = t[32]
+                add     [ebx], 19           ; += 19
+                mov     cl, 5
+L1:
+                adc     [ebx+4], edx
+                lea     ebx, [ebx+4]
+                loop    L1
+                adc     [ebx], 0x80000000
+                ; if there was a carry, copy t to x
+                ; otherwise copy t to t
+                mov     ebx, [esp+32+32+4]  ; ebx = x
+                mov     esi, esp            ; esi = t
+                mov     cl, 32
+                mov     edi, esi
+                cmovc   edi, ebx            ; edi = CF ? x : t
+                rep     movsb
+L2:
+                dec     eax
+                jp      L0
                 
-                push    rdi
-                
-                mov     x0, [rdi   ]
-                mov     x1, [rdi+ 8]
-                mov     x2, [rdi+16]
-                mov     x3, [rdi+24]
-                
-                xor     ecx, ecx       ; rcx = 0
-                mul     ecx            ; rax = 0, rdx = 0
-                mov     cl, 2          ; rcx = 2
-                bts     rdx, 63        ; rdx = 0x8000000000000000
-m_l1:
-                mov     x4, x0
-                mov     x5, x1
-                mov     x6, x2
-                mov     x7, x3                
-                
-                add     x4, 19         ; += 19
-                adc     x5, rax        ; += 0
-                adc     x6, rax        ; += 0
-                adc     x7, rdx        ; += 0x8000000000000000
-                
-                cmovc   x0, x4
-                cmovc   x1, x5
-                cmovc   x2, x6
-                cmovc   x3, x7
-                
-                loop    m_l1
-                
-                pop     rcx
-                
-                mov     [rcx   ], x0
-                mov     [rcx+ 8], x1
-                mov     [rcx+16], x2
-                mov     [rcx+24], x3
-
+                popad
                 popad
                 ret

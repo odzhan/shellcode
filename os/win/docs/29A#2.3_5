@@ -1,0 +1,91 @@
+/*
+                        . .: .:.. :.. .. .:.::. :. ..:
+                      <<-==млллллм=млллллм=млллллм===<
+                       .:: ллл ллл:ллл ллл.ллл ллл .:.
+                       . .:.мммллп.плллллл.ллллллл:..
+                        ...лллмммм:ммммллл:ллл ллл.::.
+                       >===ллллллл=ллллллп=ллл ллл=->>
+                      .: .:.. ..:. .: ..:.::. ::.. :.:.
+
+                                  [GETPROC]
+              GetProcAddress-alike utility, by Jacky Qwerty/29A
+
+
+ And here's one more tool you will probably find useful when getting started
+ in the 32-bit virus coding.  Albeit it simply gets the function addresez of
+ one or more APIz from inside any specified module.  It has the advantage of
+ findin  API function adressez  exported by  ordinal only  from the KERNEL32
+ module library. This is somethin u can't normally do by usin GetProcAddress
+ on any ordinal exported from KERNEL32,  since Microsoft intentionally added
+ some code to return failure in such casez. This program overcomes this pro-
+ blem by interactin directly with the export table if necesary. This utility
+ will surely help u when codin your Win32 PE infector and when findin the so
+ called "VxDCall" API address (ordinal 1) to do whatever u want under Win95.
+
+                                                                          */
+/*- -[GETPROC.C]- - - - - - - - - - - - - - - - - - - - - - - - - - - ->8 */
+
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define RVA2OFS(Type, Base, RVA) ((Type *)((DWORD)(Base) + (DWORD)(RVA)))       //a very useful macro
+
+FARPROC MyGetProcAddr(HMODULE hMod, LPCSTR pszAPIName) {
+  PIMAGE_DOS_HEADER pMZ;
+  PIMAGE_NT_HEADERS pPE;
+  PIMAGE_EXPORT_DIRECTORY pExp;
+  DWORD cIndex;
+  FARPROC fnAddr;
+  if ((fnAddr = GetProcAddress(hMod, pszAPIName)) == 0) {
+    pMZ = (PIMAGE_DOS_HEADER)hMod;
+    if (pMZ->e_magic != IMAGE_DOS_SIGNATURE) goto Ret;
+    pPE = RVA2OFS(IMAGE_NT_HEADERS, pMZ, pMZ->e_lfanew);
+    if (pPE->Signature != IMAGE_NT_SIGNATURE) goto Ret;
+    if (pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size == 0) goto Ret;
+    pExp = RVA2OFS(IMAGE_EXPORT_DIRECTORY, pMZ, pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+    if ((DWORD)pszAPIName & -0x10000) {
+      for (cIndex = 0; cIndex < pExp->NumberOfNames; cIndex++)
+        if (strcmp(RVA2OFS(CHAR, pMZ, RVA2OFS(DWORD, pMZ, pExp->AddressOfNames)[cIndex]) , pszAPIName) == 0) break;
+      if (pExp->NumberOfNames <= cIndex) goto Ret;
+      cIndex = (DWORD)RVA2OFS(WORD, pMZ, pExp->AddressOfNameOrdinals)[cIndex]; }
+    else cIndex = (DWORD)pszAPIName - pExp->Base;
+    if (pExp->NumberOfFunctions <= cIndex) goto Ret;
+    fnAddr = (FARPROC)RVA2OFS(DWORD, pMZ, RVA2OFS(DWORD, pMZ, pExp->AddressOfFunctions)[cIndex]); }
+  Ret: return fnAddr;          
+}
+
+UINT main(UINT argc, CHAR *argv[]) {
+  OSVERSIONINFO Version;
+  HMODULE hMod;
+  FARPROC fnAddr;
+  DWORD Ordinal;
+  UINT i, RetValue = 1;
+  CHAR *szTmp;
+  printf("GETPROC - Gets Win32 API function adressez - (c) 1997 jqwerty/29A\n\n");
+  Version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (!GetVersionEx(&Version)) { printf("Can't get Win32 version\n"); Ret: return RetValue; }
+  if (Version.dwPlatformId == VER_PLATFORM_WIN32s) { printf("This program can NOT run under Win32s\n"); goto Ret; }
+  if (argc == 1) {
+    printf("  Syntax: GETPROC <Win32 Module Name> <Win32 API #1 [Win32 API #2] ... >\n\n");
+    if ((hMod = GetModuleHandleA("KERNEL32")) == 0) { printf("[KERNEL32] Module Name base adress not found\n"); goto Ret; }
+    printf("[KERNEL32] Module name base adress = %08Xh\n", hMod);
+    if ((fnAddr = MyGetProcAddr(hMod, "GetModuleHandleA")) == 0) printf("[GetModuleHandleA] API name base adress not found\n");
+    else printf("[GetModuleHandleA] API name base adress = %08Xh\n", fnAddr);
+    if ((fnAddr = MyGetProcAddr(hMod, "GetModuleHandleW")) == 0) printf("[GetModuleHandleW] API name base adress not found\n");
+    else printf("[GetModuleHandleW] API name base adress = %08Xh\n", fnAddr);
+    if ((fnAddr = MyGetProcAddr(hMod, "GetProcAddress")) == 0) printf("[GetProcAddress] API name base adress not found\n");
+    else printf("[GetProcAddress] API name base adress = %08Xh\n", fnAddr); }
+  else {
+    if ((hMod = LoadLibraryA(strupr(argv[1]))) == 0) { printf("[%s] Module name base adress not found\n", argv[1]); goto Ret; }
+    printf("[%s] Module name base adress = %08Xh\n", argv[1], hMod);
+    for (i = 2; i < argc; i++) {
+      if ((Ordinal = atoi(argv[i])) == 0) { szTmp = "Name"; fnAddr = MyGetProcAddr(hMod, argv[i]); }
+      else { szTmp = "Ordinal"; fnAddr = MyGetProcAddr(hMod, (LPCSTR)Ordinal); }
+      if (!fnAddr) printf("[%s] API %s base adress not found\n", argv[i], szTmp);
+      else printf("[%s] API %s base adress = %08Xh\n", argv[i], szTmp, fnAddr); }
+    FreeLibrary(hMod);
+    RetValue--; }
+  goto Ret;
+}

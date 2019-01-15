@@ -28,7 +28,7 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 
 ; -----------------------------------------------
-; RoadRunneR-64/128 block cipher in x86 assembly
+; RoadRunneR64/128 block cipher in x86 assembly
 ;
 ; size: 140 bytes
 ;

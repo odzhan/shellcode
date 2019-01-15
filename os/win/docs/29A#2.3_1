@@ -1,0 +1,202 @@
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+            ÚÄ PE infection under Win32 Ä¿          ÜÛÛÛÛÛÜ ÜÛÛÛÛÛÜ ÜÛÛÛÛÛÜ
+            ³             by             ³          ÛÛÛ ÛÛÛ ÛÛÛ ÛÛÛ ÛÛÛ ÛÛÛ
+            ³        Mister Sandman      ³           ÜÜÜÛÛß ßÛÛÛÛÛÛ ÛÛÛÛÛÛÛ
+            ³         Jacky Qwerty       ³          ÛÛÛÜÜÜÜ ÜÜÜÜÛÛÛ ÛÛÛ ÛÛÛ
+            ÀÄÄÄÄÄÄÄÄÄÄÄ GriYo ÄÄÄÄÄÄÄÄÄÄÙ          ÛÛÛÛÛÛÛ ÛÛÛÛÛÛß ÛÛÛ ÛÛÛ
+ ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+ ÄÄ´ Introduction ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ Same as we establish different ages in the evolution of computers we should
+ establish different ages also in the evolution of computer viruses, as they
+ advance together with the systems, platforms, and processors they intend to
+ infect. There were not, of course, any viruses for those huge wardrobe-like
+ computers with whom you couldn't do much more than what you can do nowadays
+ with a supertiny pocket calculator. But since viral activity started around
+ 1985, lots and lots of people have been crashing their balls at their chair
+ trying to evolve and advance in viral technology.
+
+ However, save for some exceptions, we have been fighting for over ten years
+ against the same operating system, the same 16-bit crap, designed and never
+ improved by Microsoft. That's why such a long period of time should be con-
+ sidered an only step, the first period of the viral existence in computers.
+
+ Now this first viral age seems to have reached its end, as well as DOS, al-
+ beit it will continue working in millions of computers, all over the world.
+ In the other hand we have Windows95 and WindowsNT (from now onwards and to-
+ gether with Win32s we'll call them Win32), which are being used and instal-
+ led in an incredibly increasing percentage of computers. We can't say Win32
+ will be the future and definitive OS, but it does seem it is one of the 1st
+ storeys the final thing is gonna be built on.
+
+ This new phase of operating systems also means a new phase of viruses which
+ will work and infect  under these new  scenarios. Win32 has become the most
+ used OS in less than two years, and will surely wipe out of the map many o-
+ ther minoritary operating  systems, such as OS/2. Virus authors have reali-
+ sed about this fact, and that's why a new era opens at us... the second vi-
+ ral age or generation, a new breed of infectors... 32-bit viruses.
+
+ If you're one of those who have always dreamed about how cool would it have
+ been to start writing viruses around 1985, when they first appeared, but it
+ was too late for your dreams to become reality, now you have a second opor-
+ tunity to become a pioneer in the VX scene. And if you're just one of those
+ dorks whose only wish is to remain being nobody as one of who knows how ma-
+ ny thousands of DOS virus writers and can't go further than the (true) sta-
+ tement "Windows95 = shit"... stop reading and go code with your open menta-
+ lity to YAM, cause this won't be of your interest.
+
+ Before going further in this tutorial, it must remain clear for our readers
+ that we DO support the statement "Windows95 = shit", but proffesionality is
+ usually a synonym of objectivity, and  that's why we have to  focus it with
+ impartiallity. I think no  intelligent human being in this world likes Win-
+ dows95, but it's an interesting attitude to see it just as a test 32-bit OS
+ in order  to advance in  the viral-oriented researching, without bearing in
+ mind how good or bad it is, or how many bugs it has.
+
+ Just say "let's go for it!".
+
+
+ ÄÄ´ Welcome to the new school ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ This tutorial is *almost* 100% theoretical, as it intends to illustrate the
+ so called "29A technique", which will help you in order to write compatible
+ viruses for Windows95 and WindowsNT and to make them much more versatile in
+ the concerning about PE modifications. At the moment of writing this, there
+ were _only_ four Win32 infectors (Win32.Jacky, Win32.Cabanas, Esperanto and
+ Win32.Marburg - order of appearance), and they all have been written by 29A
+ members, which shows the lack of Win32 virus coders by now. The contents of
+ this article are pretty advanced and oriented to those who have already co-
+ ded at least some Windows95 PE infector.
+
+ If your intentions are to get started in the 32-bit virus age and begin co-
+ ding some basic PE infectors, we recommend you to have a look to other pre-
+ viously published sources in other virus magazines; then, come back to this
+ article and get some pretty useful clues about how to stay compatible :)
+
+ This tutorial will deal with "APIs: the key stone", chapter in which we try
+ to explain the importance  of working at API level, "The KERNEL32 problem",
+ and "The GetModuleHandle solution", which  explain one of the main problems
+ in the concerning about getting the base address of KERNEL32.dll, "GetProc-
+ Address", showing the best way to get API addresses, "Simple PE infection",
+ which illustrates a simpler  way to infect PE files, and "Cool addings", as
+ a preface to another article in 29A#3, which describes some features, which
+ can be added to any Win32 virus in order to make it more complex.
+
+ Before stepping into the first chapter it's a honor to say that the pioneer
+ of these techniques, the guy who wrote the first Win32 infectors, and thus,
+ the one who  should be known for having  developed the first 32-bit viruses
+ is Jacky Qwerty/29A, the author of Win32.Jacky, and Win32.Cabanas. It would
+ be completely unfair not to mention -and even congratulate- him.
+
+
+ ÄÄ´ APIs: the key stone ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ The most important thing you'll have to bear in mind while writing your 32-
+ bit viruses for Windows platforms is to always! use APIs. Why are APIs that
+ important? the answer is easy... they are the only point Windows95 and Win-
+ dowsNT have in common. Viruses have to look as closer as possible as normal
+ applications, and there are no normal applications in Win32 which don't use
+ APIs in order to perform its functioning. Using apparently neat tricks such
+ as calling interrupt 21h within a Win32 application is the worst thing your
+ Win32 virus can do, as it won't be able to stay compatible and besides will
+ be 100%  dependent of the presence of DOS. While  nowadays this last reason
+ does not represent  any serious  trouble, it will for sure be a pain in the
+ near future as DOS is about to be wiped out of our computers as soon as new
+ versions of Windows95 or WindowsNT are released.
+
+
+ ÄÄ´ The KERNEL32 problem ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ Once we have assumed we're gonna work at API level, the very first necessa-
+ ry thing is to locate KERNEL32.dll, as it is the library which contains the
+ address of all the API functions we need to use in our virus. But, there is
+ a big problem here... the address of KERNEL32 is not fix at all. It has not
+ been the same in any of the known versions of Windows95 as well as for Win-
+ dowsNT... and this means we can't (or at least should not) assume hardcoded
+ values because they'd force our virus to be compatible with only one of the
+ Win32 platforms, and what we're looking for is just the opposite thing.
+
+
+ ÄÄ´ The GetModuleHandle solution ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ The solution is always in APIs. There's an API, "GetModuleHandle", which is
+ used in order to get the address of a given module. And, of course, this is
+ of our interest since KERNEL32.dll is a  module. But now comes a pretty cu-
+ rious thing... how the fuck is it possible to call an API function if we're
+ looking for KERNEL32 just because we need it to be able to call APIs? Quite
+ similar to the question "what was first, the egg or the hen?".
+
+ It is simple. Just don't infect PE files which don't import any function of
+ KERNEL32.dll (almost impossible tho), so you will make sure, every file you
+ infect imports something  from KERNEL32.dll, so it will be possible for you
+ to look in the IAT for the RVA of the GetModuleHandle API, and then call it
+ from your code. Once having called this API by means of its RVA you'll have
+ the address of KERNEL32.dll waiting for you in EAX ;)
+
+
+ ÄÄ´ GetProcAddress ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ Now it's ok, you already have the address of KERNEL32.dll, but... where are
+ the address of the APIs you need? how will you call them? the answer is ea-
+ sy again... by means of another API, "GetProcAddress", which makes possible
+ to get the address of any API function in any given module.
+
+ Now that you have already guessed the base address of KERNEL32.dll, all you
+ need to do is to specify the name of the API you're looking for in that mo-
+ dule and call the GetProcAddress API. A table  of API names and a good loop
+ are strongly recommended in order to save a good amount of bytes ;)
+
+ It's understood that, same as  for GetModuleHandle, you need to get the RVA
+ of GetProcAddress in the IAT of your victims, while infecting them, because
+ there's no way to know it at the time you need to call it :)
+
+ Obviously, both the GetModuleHandle, and the GetProcAddress solutions might
+ not work under certain strange circumstances. For the case of this happens,
+ you should have some extra routines which, by means of undocumented tricks,
+ could get the address of both APIs. Two good examples of  this are included
+ in the source code of the Win32 viruses published in this issue of 29A.
+
+
+ ÄÄ´ Simple PE infection ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ This very last point of the so called "29A technique" deals with file hand-
+ ling in Win32 (API-based, of course) and the PE infection itself. There are
+ two very important things on this: file mapping in memory and attachment to
+ the last section declared in the PE header.
+
+ File mapping in memory is a new way of  handling files Win32 platforms pro-
+ vide in order to make things much easier. Now you don't need to read, write
+ or lseek anymore. Just map any file in memory and you'll get a base address
+ where it has been mapped. From that base address, just reference any offset
+ and read from it, write into it, and  do whatever you want, with no need to
+ lseek to any position... it's mapped in your memory :)
+
+ And the second  and last point is extremely important. Before  Jacky Qwerty
+ came up with this technique, all the Win95 viruses infected PE files by mo-
+ difying the PE header and inserting a new section into it, then copying the
+ viral body into that last section. This was very easy to detect, apart from
+ being a very tedious method and taking a lot of bytes in your code. The so-
+ lution we provide to this in our 29A technique is to update the size of the
+ last section of the PE file in the PE header, including the size of our vi-
+ rus, and then appending our code to the end of this section.
+
+ Harder to detect, easier to write ;)
+
+
+ ÄÄ´ Cool addings ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+ There are a lots of things which have  not been mentioned in this tutotial,
+ albeit they are being  already used and enjoyed, such as the implementation
+ of Structure Exception Handling (SEH), 32-bit polymorphism, and  many other
+ cool techniques which make our Win32 viruses much more stable and robust.
+
+ These and other topics will be referenced in our next issue, where a lot of
+ code examples will be available to make possible to check these new tricks.
+ Till then, put the 29A technique in practice, and do not forget to make use
+ of the tools we provide to  you in this issue of 29A (PEWRSEC, GETPROC, and
+ the 29A INC files, which are extremely useful to code your Win32 viruses).
+
+
+ Mister Sandman,
+ bring me a dream.

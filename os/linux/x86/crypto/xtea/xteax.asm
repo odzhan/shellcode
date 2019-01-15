@@ -41,8 +41,8 @@
     global _xtea
 
         
-    %define x0  eax
-    %define x1  ebx    
+    %define w0  eax
+    %define w1  ebx    
 
     %define t0  ebp
     %define t1  esi
@@ -61,18 +61,18 @@ _xtea:
     xor    edx, edx          ; sum = 0
     push   esi
     lodsd
-    xchg   eax, x1
+    xchg   eax, w1
     lodsd
-    xchg   eax, x1
+    xchg   eax, w1
 L0:
-    mov    t0, x1            ; t0   = x1 << 4
+    mov    t0, w1            ; t0   = w1 << 4
     shl    t0, 4
     
-    mov    t1, x1            ; t1   = x1 >> 5
+    mov    t1, w1            ; t1   = w1 >> 5
     shr    t1, 5    
     
     xor    t0, t1            ; t0  ^= t1
-    add    t0, x1            ; t0  += x1;
+    add    t0, w1            ; t0  += w1;
     
     mov    t1, sum           ; t1   = sum
     test   cl, 1
@@ -88,14 +88,14 @@ L1:
     
     xor    t0, t1            ; t0 ^= t1
     
-    add    x0, t0            ; x0 += t0
-    xchg   x0, x1            ; XCHG(x0, x1); 
+    add    w0, t0            ; w0 += t0
+    xchg   w0, w1            ; XCHG(w0, w1); 
     loop   L0    
     
     pop    edi               ; edi = x
-    stosd                    ; x[0] = x0
-    xchg   eax, x1
-    stosd                    ; x[1] = x1
+    stosd                    ; x[0] = w0
+    xchg   eax, w1
+    stosd                    ; x[1] = w1
     popa
     ret    
     

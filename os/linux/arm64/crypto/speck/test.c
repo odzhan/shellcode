@@ -50,6 +50,27 @@ uint8_t plain128[]=
 
 uint64_t cipher128[2] = {0x4eeeb48d9c188f43, 0x4109010405c0f53e};
     
+#define R(v,n)(((v)>>(n))|((v)<<(64-(n))))
+#define F(n)for(i=0;i<n;i++)
+typedef unsigned long long W;
+
+void speck128x(void*mk,void*in){
+  W i,t,k[4],r[2];
+
+  memcpy(r,in,16);
+  memcpy(k,mk,32);
+  
+  F(34)
+    r[1]=(R(r[1],8)+*r)^*k,
+    *r=R(*r,61)^r[1],
+    t=k[3],
+    k[3]=(R(k[1],8)+*k)^i,
+    *k=R(*k,61)^k[3],
+    k[1]=k[2],k[2]=t;
+    
+  memcpy(in,r,16);
+}
+
 int main (void)
 {
   uint64_t buf[4];
@@ -71,7 +92,7 @@ int main (void)
   // copy plain text to local buffer
   memcpy (buf, plain128, sizeof(plain128));
 
-  speck128(key128, buf);
+  speck128x(key128, buf);
     
   equ = memcmp(cipher128, buf, sizeof(cipher128))==0;
     

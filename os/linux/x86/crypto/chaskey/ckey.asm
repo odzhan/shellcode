@@ -41,10 +41,10 @@
     global chaskey
     global _chaskey
 
-    %define x0 eax
-    %define x1 ebx
-    %define x2 edx
-    %define x3 ebp
+    %define w0 eax
+    %define w1 ebx
+    %define w2 edx
+    %define w3 ebp
 
 chaskey:
 _chaskey:
@@ -54,58 +54,58 @@ _chaskey:
     push    esi
     ; load plaintext
     lodsd
-    xchg    eax, x3
+    xchg    eax, w3
     lodsd
-    xchg    eax, x1
+    xchg    eax, w1
     lodsd
-    xchg    eax, x2
+    xchg    eax, w2
     lodsd
-    xchg    eax, x3
+    xchg    eax, w3
     ; pre-whiten
-    xor     x0, [edi   ]
-    xor     x1, [edi+ 4]
-    xor     x2, [edi+ 8]
-    xor     x3, [edi+12]
+    xor     w0, [edi   ]
+    xor     w1, [edi+ 4]
+    xor     w2, [edi+ 8]
+    xor     w3, [edi+12]
     push    16
     pop     ecx
 L0:    
     ; x[0] += x[1];
-    add     x0, x1           
+    add     w0, w1           
     ; x[1]=ROTR32(x[1],27) ^ x[0];
-    ror     x1, 27           
-    xor     x1, x0
+    ror     w1, 27           
+    xor     w1, w0
     ; x[2] += x[3];
-    add     x2, x3
+    add     w2, w3
     ; x[3]=ROTR32(x[3],24) ^ x[2];
-    ror     x3, 24
-    xor     x3, x2
+    ror     w3, 24
+    xor     w3, w2
     ; x[2] += x[1];
-    add     x2, x1
+    add     w2, w1
     ; x[0]=ROTR32(x[0],16) + x[3];
-    ror     x0, 16
-    add     x0, x3
+    ror     w0, 16
+    add     w0, w3
     ; x[3]=ROTR32(x[3],19) ^ x[0];
-    ror     x3, 19
-    xor     x3, x0
+    ror     w3, 19
+    xor     w3, w0
     ; x[1]=ROTR32(x[1],25) ^ x[2];
-    ror     x1, 25
-    xor     x1, x2
+    ror     w1, 25
+    xor     w1, w2
     ; x[2]=ROTR32(x[2],16);
-    ror     x2, 16
+    ror     w2, 16
     loop    L0
     ; post-whiten
-    xor     x0, [edi   ]
-    xor     x1, [edi+ 4]
-    xor     x2, [edi+ 8]
-    xor     x3, [edi+12]
+    xor     w0, [edi   ]
+    xor     w1, [edi+ 4]
+    xor     w2, [edi+ 8]
+    xor     w3, [edi+12]
     pop     edi
     ; save ciphertext
     stosd
-    xchg    eax, x1
+    xchg    eax, w1
     stosd
-    xchg    eax, x2
+    xchg    eax, w2
     stosd
-    xchg    eax, x3
+    xchg    eax, w3
     stosd
     popad
     ret

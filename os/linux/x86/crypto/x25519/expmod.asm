@@ -51,46 +51,48 @@ expmod:
                 ; u8 t[32]
                 pushad
                 
-                ; rsi = x
+                ; esi = x
+                mov    esi, [esp+32+4] ; 
                 
-                ; rdi = t
+                ; edi = t
                 mov    edi, esp
                 
-                push   rsi             ; save x
-                push   rdi             ; save t
-                
+                push   esi             ; save x
+                push   edi             ; save t
+                push   32
+                pop    ecx
                 ; memcpy (t, x, 32);
                 rep    movsb
-                pop    rsi             ; restore t in rsi
+                pop    esi             ; restore t in rsi
                 
                 xchg   eax, ecx        ; eax = 0
                 mov    al, 253         ; i=253
 em_l0:
-                push   rsi             ; rdi = t
-                pop    rdi
-                push   rsi             ; rdx = t
-                pop    rdx
+                push   t
+                push   t
+                push   t
                 call   mulmod          ; mulmod(t, t, t);
-                 
+                add    esp, 4*3
+                
                 cmp    al, 2           ; if (i != 2)
                 je     em_l1
                 
                 cmp    al, 4           ; if (i != 4) 
                 je     em_l1
 
+                push   t
+                push   t
                 push   x
-                push   t
-                push   t
                 call   mulmod          ; mulmod(t, t, x);
-                add    esp, 3*4
+                add    esp, 4*3
 em_l1:                
                 dec    eax             ; --i
                 jns    em_l0           ; i>=0
                 
                 ; memcpy (x, t, 32);
-                pop    rdi             ; rdi = x
+                pop    edi             ; rdi = x
                 push   32
-                pop    rcx
+                pop    ecx
                 rep    movsb
                 
                 popad

@@ -53,8 +53,8 @@ struc pushad_t
   .size:
 endstruc
 
-%define x0 ebx
-%define x1 eax
+%define w0 ebx
+%define w1 eax
 
 %define k0 ecx
 %define k1 edx
@@ -82,18 +82,18 @@ _simeck:
     mov    esi, [esp+64+8] ; esi=x
     push   esi
     lodsd
-    xchg   eax, x0
+    xchg   eax, w0
     lodsd
 sm_l0:
-    xor    x0, k0  ; x[0]^=k[0];
-    mov    t0, x1  ; x[0]^=R(x[1],1);
+    xor    w0, k0  ; x[0]^=k[0];
+    mov    t0, w1  ; x[0]^=R(x[1],1);
     rol    t0, 1   ;
-    xor    x0, t0  ;
+    xor    w0, t0  ;
     rol    t0, 4   ; x[0]^=(R(x[1],5)&x[1]);
-    and    t0, x1  ;
-    xor    x0, t0  ;
+    and    t0, w1  ;
+    xor    w0, t0  ;
 
-    xchg   x0, x1  ; X(x[0],x[1]);
+    xchg   w0, w1  ; X(x[0],x[1]);
 
     ; t0 = (s & 1) - 4;
     xor    t0, t0
@@ -117,10 +117,10 @@ sm_l0:
     jnz    sm_l0
 
     pop    edi
-    xchg   eax, x0
-    stosd          ; x[0]=x0;
-    xchg   eax, x0
-    stosd          ; x[1]=x1;
+    xchg   eax, w0
+    stosd          ; x[0]=w0;
+    xchg   eax, w0
+    stosd          ; x[1]=w1;
 
     popad
     popad

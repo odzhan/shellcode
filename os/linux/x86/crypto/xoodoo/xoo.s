@@ -30,7 +30,7 @@
 # -----------------------------------------------
 # Xoodoo Permutation Function in x86 assembly
 #
-# size: 187 bytes
+# size: 183 bytes
 #
 # global calls use cdecl convention
 #
@@ -74,55 +74,52 @@ L2:
     xor    eax, ebx
     stosd                    # e[i] = eax
     loop   L2
-    popa                     # restore all
+    
     # x[i]^= e[(i - 1) & 3]  #
     dec    edx               # edx = -1
     mov    cl, 12
 L3:
-    mov    eax, edx          # eax = edx & 3
+    mov    eax, edx             # eax = edx & 3
     and    eax, 3
-    mov    eax, [edi+eax*4]  # eax = e[(i - 1) & 3]
-    inc    edx               # i++
-    xor    [esi+edx*4], eax  # x[i] ^= eax
+    mov    eax, [edi+4*eax-16]  # eax = e[(i - 1) & 3]
+    inc    edx                  # i++
+    xor    [esi+4*edx-16], eax  # x[i] ^= eax
     loop   L3
-
-    mov    cl, 4
 L4:
-    # XCHG(x[7], x[4])#
-    mov    eax, [esi+7*4]
-    xchg   eax, [esi+4*4]
+    # XCHG(x[7], x[4])
+    mov    eax, [esi+7*4-16]
+    xchg   eax, [esi+4*4-16]
 
-    # XCHG(x[4], x[5])#
-    xchg   eax, [esi+5*4]
+    # XCHG(x[4], x[5])
+    xchg   eax, [esi+5*4-16]
 
-    # XCHG(x[5], x[6])#
-    xchg   eax, [esi+6*4]
-    # x[7] = x[6]#
-    mov    [esi+7*4], eax
+    # XCHG(x[5], x[6])
+    xchg   eax, [esi+6*4-16]
+    # x[7] = x[6]
+    mov    [esi+7*4-16], eax
 
-    # x[0] ^= rc[r]#
-    xor    [esi], ebp
-    mov    cl, 4
-    pusha
+    # x[0] ^= rc[r]
+    xor    [esi-16], ebp
+    popa
 L5:
-    # x0 = x[i+0]#
+    # x0 = x[i+0]
     lodsd
 
-    # x1 = x[i+4]#
+    # x1 = x[i+4]
     mov    ebx, [esi+16-4]
 
-    # x2 = ROTR32(x[i+8], 21)#
+    # x2 = ROTR32(x[i+8], 21)
     mov    edx, [esi+32-4]
     ror    edx, 21
 
-    # x[i+8] = ROTR32((~x0 & x1) ^ x2, 24)#
+    # x[i+8] = ROTR32((~x0 & x1) ^ x2, 24)
     not    eax
     and    eax, ebx
     xor    eax, edx
     ror    eax, 24
     mov    [esi+32-4], eax
 
-    # x[i+4] = ROTR32((~x2 & x0) ^ x1, 31)#
+    # x[i+4] = ROTR32((~x2 & x0) ^ x1, 31)
     push   edx
     not    edx
     and    edx, [esi-4]
@@ -131,23 +128,22 @@ L5:
     mov    [esi+16-4], edx
     pop    edx
 
-    # x[i+0] ^= ~x1 & x2#
+    # x[i+0] ^= ~x1 & x2
     not    ebx
     and    ebx, edx
     xor    [esi-4], ebx
     loop   L5
-    popa
+    
+    # XCHG(x[8], x[10])
+    # XCHG(x[9], x[11])
+    mov    eax, [esi+8*4-16]
+    mov    ebp, [esi+9*4-16]
 
-    # XCHG(x[8], x[10])#
-    # XCHG(x[9], x[11])#
-    mov    eax, [esi+8*4]
-    mov    ebp, [esi+9*4]
+    xchg   eax, [esi+10*4-16]
+    xchg   ebp, [esi+11*4-16]
 
-    xchg   eax, [esi+10*4]
-    xchg   ebp, [esi+11*4]
-
-    mov    [esi+8*4], eax
-    mov    [esi+9*4], ebp
+    mov    [esi+8*4-16], eax
+    mov    [esi+9*4-16], ebp
 
     popa
 

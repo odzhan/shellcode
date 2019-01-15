@@ -45,85 +45,74 @@
 mulmod:                   
                 pushad
                 
-                push    rdi            ; r9 = r 
-                pop     r9
-                
-                push    rdx            ; r8 = b
-                pop     r8 
-                
+                mov     esi, [esp+8]   ; esi = a
                 push    96
-                pop     rcx
-                sub     rsp, rcx
+                pop     ecx
+                sub     esp, ecx
                 
                 ; memset(t, 0, 96);
-                push    rsp
-                pop     rdi
+                mov     edi, esp
                 xor     eax, eax       ; eax = 0
                 rep     stosb
-                xchg    eax, ebp       ; rbp = 0
+                xchg    eax, ebp       ; ebp = 0
 mm_l0:                                 
-                xor     ebx, ebx       ; j = 0
+                mov     ebx, [esp+96+12]
 mm_l1:
-                mov     rax, [rsi+rcx] ; rax = a[i]
-                mov     rdx, [r8+rbx]  ; rdx = b[j]
-                mul     rdx            ; rax:rdx = rax * rdx
-                lea     rdi, [rbx+rcx] ; rdi = j+i
-                add     rdi, rsp       ; rdi = &t[j+i]
+                mov     eax, [esi+ecx] ; rax = a[i]
+                mov     edx, [ebx]     ; rdx = b[j]
+                mul     edx            ; eax:edx = eax * edx
+                lea     edi, [ebx+ecx] ; edi = j+i
+                add     edi, esp       ; edi = &t[j+i]
                 
-                add     [rdi+00], rax  ; t[j+i  ] += rax
-                adc     [rdi+08], rdx  ; t[j+i+1] += CF
-                adc     [rdi+16], rbp  ; t[j+i+2] += CF
-                adc     [rdi+24], rbp  ; t[j+i+3] += CF
-                adc     [rdi+32], rbp  ; t[j+i+4] += CF
+                add     [edi+00], eax  ; t[j+i  ] += eax
+                adc     [edi+04], edx  ; t[j+i+1] += CF
+                adc     [edi+08], ebp  ; t[j+i+2] += CF
+                adc     [edi+12], ebp  ; t[j+i+3] += CF
+                adc     [edi+16], ebp  ; t[j+i+4] += CF
 
-                add     bl, 8          ; j++
-                cmp     bl, 32         ; j<4
+                add     ebx, 4
                 jb      mm_l1
                 
-                add     cl, 8          ; i++
+                add     cl, 4          ; i++
                 cmp     cl, 32         ; i<4
                 jb      mm_l0
                 
                 ; reduction step
-                push    rsp
-                pop     rsi            ; rsi = t
-                
-                push    rsp
-                pop     rdi            ; rdi = t
+                mov     esi, esp       ; esi = t
+                mov     edi, esp       ; edi = t
                 
                 mov     bl, 38         ; reduce by 2^256-38
                 mov     cl, 4          ; 
 mm_l2:
-                mov     rax, [rdi+32]
-                and     [rdi+32], rbp  ; clear for accurate carry propagation
-                mul     rbx          
-                add     rax, [rdi]
-                stosq                
-                adc     [rdi], rdx
+                mov     eax, [edi+32]
+                and     [edi+32], ebp  ; clear for accurate carry propagation
+                mul     ebx          
+                add     eax, [edi]
+                stosd                
+                adc     [edi], edx
                 loop    mm_l2
                 
                 ; load last result into rdx
-                mov     rdx, [rdi]     ; 
-                adc     rdx, rcx       ; 
-                imul    rdx, rbx       ; 
+                mov     edx, [edi]     ; 
+                adc     edx, ecx       ; 
+                imul    edx, ebx       ; 
                 
-                add     [rsi   ], rdx  ; r[0] += r[4] * 38                
-                adc     [rsi+ 8], rcx  ; r[1] += CF
-                adc     [rsi+16], rcx  ; r[2] += CF
-                adc     [rsi+24], rcx  ; r[3] += CF
+                add     [esi   ], edx  ; r[0] += r[4] * 38                
+                adc     [esi+ 4], ecx  ; r[1] += CF
+                adc     [esi+ 8], ecx  ; r[2] += CF
+                adc     [esi+12], ecx  ; r[3] += CF
                 
                 ; last one
                 cmovnc  ebx, ecx       ; zero rbx if CF==0
-                add     [rsi], rbx     ; r[0] += 38 * CF
+                add     [esi], ebx     ; r[0] += 38 * CF
 
-                ; memcpy(x, t, 32);
-                push    r9
-                pop     rdi            ; rdi = x
+                ; memcpy(r, t, 32);
+                mov     edi, [esp+96+4] ; edi = r
                 mov     cl, 32
                 rep     movsb
                 
                 ; release memory
-                add     rsp, 96
+                add     esp, 96
                 
                 popad
                 ret

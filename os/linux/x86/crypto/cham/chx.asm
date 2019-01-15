@@ -30,7 +30,7 @@
 ; -----------------------------------------------
 ; CHAM-128/128 block cipher in x86 assembly
 ;
-; size: 123 bytes
+; size: 122 bytes
 ;
 ; global calls use cdecl convention
 ;
@@ -63,7 +63,7 @@ L0:
     mov    ecx, ebx
     mov    edx, ebx
       
-    ror    ecx, 31
+    rol    ecx, 1
     ror    edx, 24  
     
     xor    ebx, ecx 
@@ -94,7 +94,6 @@ L0:
     xor    eax, eax
     ; t = x[3], x[0] ^= i, x[3] = rk[i & 7]
 L1: 
-int3
     mov    cx, 0x1F18      ; rotation values
     test   al, 1
     jnz    L2

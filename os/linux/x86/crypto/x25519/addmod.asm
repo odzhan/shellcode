@@ -57,12 +57,12 @@ addmod:
                 xor    ecx, ecx        ; ecx = 0, CF = 0                
                 mov    cl, 8           ; add 8 integers
                 push   edi
-am_l1:
+L0:
                 lodsd                  ; eax = a[i]
                 adc    eax, [ebx]      ; eax += b[i] + CF
                 stosd                  ; r[i] = eax
                 lea    edx, [ebx+4]    ; advance b by 4
-                loop   am_l1
+                loop   L0
                 pop    edi
 
                 ; reduction step

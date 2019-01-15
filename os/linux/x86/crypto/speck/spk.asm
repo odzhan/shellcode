@@ -58,8 +58,8 @@
 %define k2 ecx    
 %define k3 esi
 
-%define x0 ebx    
-%define x1 edx
+%define w0 ebx    
+%define w1 edx
 
 speck:
 _speck:    
@@ -68,9 +68,9 @@ _speck:
     push   esi               ; save
     
     lodsd
-    xchg   eax, x0           ; x0 = in[0]
+    xchg   eax, w0           ; w0 = in[0]
     lodsd
-    xchg   eax, x1           ; x1 = in[1]
+    xchg   eax, w1           ; w1 = in[1]
     
     mov    esi, [esp+32+8]   ; esi = key
     lodsd
@@ -83,13 +83,13 @@ _speck:
     xchg   eax, k3           ; k3 = key[3]    
     xor    eax, eax          ; i = 0
 spk_el:
-    ; x0 = (ROTR32(x0, 8) + x1) ^ k0;
-    ror    x0, 8
-    add    x0, x1
-    xor    x0, k0
-    ; x1 = ROTR32(x1, 29) ^ x0;
-    ror    x1, 29
-    xor    x1, x0
+    ; w0 = (ROTR32(w0, 8) + w1) ^ k0;
+    ror    w0, 8
+    add    w0, w1
+    xor    w0, k0
+    ; w1 = ROTR32(w1, 29) ^ w0;
+    ror    w1, 29
+    xor    w1, w0
     ; k1 = (ROTR32(k1, 8) + k0) ^ i;
     ror    k1, 8
     add    k1, k0
@@ -105,9 +105,9 @@ spk_el:
     jnz    spk_el
     
     pop    edi    
-    xchg   eax, x0
+    xchg   eax, w0
     stosd
-    xchg   eax, x1
+    xchg   eax, w1
     stosd
     popad
     ret

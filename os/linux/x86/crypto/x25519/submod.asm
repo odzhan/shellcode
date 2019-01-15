@@ -47,12 +47,12 @@ submod:
                 
                 lea    esi, [esp+32+4]
                 lodsd
-                xchg   edi, eax
+                xchg   edi, eax        ; edi = r
                 lodsd
-                xchg   ebx, eax
+                xchg   ebx, eax        ; ebx = a
                 lodsd
-                xchg   ebx, eax
-                xchg   esi, eax
+                xchg   ebx, eax        ; ebx = b, eax = a
+                xchg   esi, eax        ; esi = a
                 
                 xor    ecx, ecx        ; ecx = 0, CF = 0 
                 mov    cl, 8           ; subtract 8 integers
