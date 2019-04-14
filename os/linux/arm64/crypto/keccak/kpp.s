@@ -1,5 +1,5 @@
 
-// keccak-p[1600, 24]
+// keccak-f[1600, 24]
 // 428 bytes
 
     .arch armv8-a

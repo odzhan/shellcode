@@ -28,9 +28,8 @@
   POSSIBILITY OF SUCH DAMAGE. */
 
   .arm
-  .arch armv6  
+  .arch armv7
   .text
-  .align  2
   
   .global speck
 

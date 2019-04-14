@@ -199,7 +199,7 @@ _get_apix:
     pop    eax
 
     mov    eax, [fs:eax]  ; eax = (PPEB) __readfsdword(0x30);
-    mov    eax, [eax+0ch] ; eax = (PMY_PEB_LDR_DATA)peb->Ldr
+    mov    eax, [eax+0ch] ; eax = (PPEB_LDR_DATA)peb->Ldr
     mov    edi, [eax+0ch] ; edi = ldr->InLoadOrderModuleList.Flink
     jmp    gapi_l1
 gapi_l0:

@@ -28,7 +28,7 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
 ; -----------------------------------------------
-; RC6-128/256 Block Cipher in x86 assembly (Encryption only)
+; RC6-128/256 block cipher in x86 assembly (Encryption only)
 ;
 ; https://people.csail.mit.edu/rivest/pubs/RRSY98.pdf
 ;

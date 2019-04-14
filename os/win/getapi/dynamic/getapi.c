@@ -30,8 +30,7 @@
 #include "getapi.h"
   
 // converts string to lowercase
-uint32_t crc32c(const char *s)
-{
+uint32_t crc32c(const char *s) {
   int      i;
   uint32_t crc=0;
   
@@ -46,8 +45,7 @@ uint32_t crc32c(const char *s)
 }
 
 #ifndef ASM
-LPVOID search_exp(LPVOID base, DWORD hash)
-{
+LPVOID search_exp(LPVOID base, DWORD hash) {
   PIMAGE_DOS_HEADER       dos;
   PIMAGE_NT_HEADERS       nt;
   DWORD                   cnt, rva, dll_h;
@@ -94,8 +92,7 @@ LPVOID search_exp(LPVOID base, DWORD hash)
   return api_adr;
 }
 
-LPVOID search_imp(LPVOID base, DWORD hash)
-{
+LPVOID search_imp(LPVOID base, DWORD hash) {
   DWORD                    dll_h, i, rva;
   PIMAGE_IMPORT_DESCRIPTOR imp;
   PIMAGE_THUNK_DATA        oft, ft;
@@ -116,26 +113,29 @@ LPVOID search_imp(LPVOID base, DWORD hash)
 
   imp = (PIMAGE_IMPORT_DESCRIPTOR) RVA2VA(ULONG_PTR, base, rva);
   
-  for (i=0; api_adr==NULL; i++) 
-  {
+  for (i=0; api_adr==NULL; i++) {
+    // no more DLL to process?
     if (imp[i].Name == 0) return NULL;
     
-    // get DLL string, calc crc32c hash
+    // calculate crc32c hash of DLL string
     dll   = RVA2VA(PCHAR, base, imp[i].Name);
     dll_h = crc32c(dll); 
     
+    // obtain address of API names
     rva   = imp[i].OriginalFirstThunk;
     oft   = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
     
+    // obtain address of API addresses
     rva   = imp[i].FirstThunk;
     ft    = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
         
-    for (;; oft++, ft++) 
-    {
+    for (;; oft++, ft++) {
       if (oft->u1.Ordinal == 0) break;
+      
       // skip import by ordinal
       if (IMAGE_SNAP_BY_ORDINAL(oft->u1.Ordinal)) continue;
       
+      // obtain address of API string
       rva = oft->u1.AddressOfData;
       ibn = (PIMAGE_IMPORT_BY_NAME)RVA2VA(ULONG_PTR, base, rva);
       
@@ -153,8 +153,7 @@ LPVOID search_imp(LPVOID base, DWORD hash)
  * Obtain address of API from PEB based on hash
  *
  ************************************************/
-LPVOID get_api (DWORD dwHash)
-{
+LPVOID get_api (DWORD dwHash) {
   PPEB                  peb;
   PPEB_LDR_DATA         ldr;
   PLDR_DATA_TABLE_ENTRY dte;
