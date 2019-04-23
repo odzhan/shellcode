@@ -9,7 +9,7 @@
       pop    ecx
       mov    eax, [fs:ecx]      ; eax = (PPEB) __readfsdword(0x30);
       mov    eax, [eax+0ch]     ; eax = (PPEB_LDR_DATA)peb->Ldr
-      mov    esi, [eax+0ch]     ; edi = ldr->InLoadOrderModuleList.Flink
+      mov    esi, [eax+0ch]     ; esi = ldr->InLoadOrderModuleList.Flink
       lodsd
       mov    esi, [eax]
       mov    ebx, [esi+18h]     ; ebx = DllBase

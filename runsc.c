@@ -253,7 +253,7 @@ void xcode(args_t *p)
   {
     memcpy (bin, p->code, p->code_len);
     //DebugBreak();
-    raise(SIGTRAP); 
+    //raise(SIGTRAP); 
     // create file/socket descriptors to simulate real system 
     // created interesting results on openbsd with limits
     // to how many files could be open at once..
