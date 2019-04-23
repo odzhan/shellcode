@@ -117,8 +117,6 @@ typedef void (*gnutls_transport_set_ptr_t)(gnutls_session_t session, gnutls_tran
 typedef void (*gnutls_transport_set_push_function_t)(gnutls_session_t session, gnutls_push_func push_func);
 typedef void (*gnutls_transport_set_pull_function_t)(gnutls_session_t session, gnutls_pull_func pull_func);
 
-Elf64_Dyn *elf_get_dyn(void *base, int tag);
-
 typedef struct _data_t {
     int s;                  // socket file descriptor
 
@@ -180,20 +178,17 @@ typedef struct _data_t {
     } api;
 } data_t;
  
-int init_ld(data_t *ds);
-int init_libc(data_t *ds);
-int init_gnutls(data_t *ds);
-
 void *get_proc_address(void *module, const char *name);
 
 void *get_proc_address2(void *module, uint32_t hash);      // using base address
 void *get_proc_address3(const char *path, uint32_t hash);  // using file path
 
 void *get_module_handle(const char *module);
-void *load_module(data_t *ds, const char *path, const char *name);
-
 void *get_module_handle1(const char *module);
 void *get_module_handle2(const char *module);
 void *get_base(void);
+
+Elf64_Phdr *elf_get_phdr(void *base, int type);
+Elf64_Dyn *elf_get_dyn(void *base, int tag);
 
 uint32_t gnu_hash(const uint8_t *name);
