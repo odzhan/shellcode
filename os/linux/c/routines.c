@@ -184,6 +184,24 @@ void *get_base(void) {
     return addr;
 }
 
+void *get_base2(void) {
+    uint64_t *fs, base;
+    
+    // retrieve the address of _nl_C_LC_CTYPE_class
+    asm ("mov %%fs:0xffffffffffffffb0,%%rax":"=a"(fs));
+    
+    base = (uint64_t)fs;
+    
+    // align down
+    base &= -4096;
+    
+    // equal to ELF?
+    while (*(uint32_t*)base != 0x464c457fUL) {
+      base -= 4096;
+    }
+    return (void*)base;
+}
+
 int read_line(int fd, char *buf, int buflen) {
     int  len;
     
@@ -261,7 +279,7 @@ void *get_module_handle1(const char *module) {
         break;
       }
     }
-    close(maps);
+    _close(maps);
     return base;
 }
 
