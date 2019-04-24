@@ -62,6 +62,7 @@ int _close(unsigned int);
 void *_mmap(void *, unsigned long, unsigned long, unsigned long,  long, unsigned long);
 int _munmap(void *, size_t);
 int _fstat(long, void *);
+long _write(long fd, char *buf, unsigned long len);
 
 typedef pid_t (*fork_t)(void);
 typedef int (*dup2_t)(int oldfd, int newfd);

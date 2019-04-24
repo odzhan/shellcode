@@ -27,7 +27,7 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
   
-#include "include.h"
+#include "ssltls/include.h"
 
 int compare(const char *s1, const char *s2) {
     while(*s1 && *s2) {
@@ -199,6 +199,36 @@ void *get_base2(void) {
     while (*(uint32_t*)base != 0x464c457fUL) {
       base -= 4096;
     }
+    return (void*)base;
+}
+
+void *get_base3(void) {
+    uint64_t base;
+    int      fd, str[4];
+    
+    // retrieve pointer to Thread Control Block
+    asm ("mov %%fs:0,%%rax" : "=a" (base));
+    
+    // align down
+    base &= -4096;
+    
+    // "/dev/random"
+    str[0] = 0x7665642f;
+    str[1] = 0x6e61722f;
+    str[2] = 0x006d6f64;
+
+    fd = _open((char*)str, O_WRONLY, 0);
+    
+    for(;;) {
+      if(_write(fd, (char*)base, 4) == 4) {
+        if (*(uint32_t*)base == 0x464c457fUL) {
+          break;
+        }
+      }
+      base -= 4096;
+    }
+    _close(fd);
+    
     return (void*)base;
 }
 
@@ -690,29 +720,39 @@ void *load_module(data_t *ds, const char *path, const char *name) {
     return base;
 }
 
-long _open(const char *path, unsigned long flags, long mode)
-{
-      long ret;
-      __asm__ volatile(
-        "mov %0, %%rdi\n"
-        "mov %1, %%rsi\n"
-        "mov %2, %%rdx\n"
-        "mov $2, %%rax\n"
-        "syscall" : : "g"(path), "g"(flags), "g"(mode));
-      asm ("mov %%rax, %0" : "=r"(ret));              
-      
-      return ret;
+long _write(long fd, char *buf, unsigned long len) {
+    long ret;
+    __asm__ volatile(
+      "mov %0, %%rdi\n"
+      "mov %1, %%rsi\n"
+      "mov %2, %%rdx\n"
+      "mov $1, %%rax\n"
+      "syscall" : : "g"(fd), "g"(buf), "g"(len));
+    asm("mov %%rax, %0" : "=r"(ret));
+    return ret;
 }
 
-int _close(unsigned int fd)
-{
-      long ret;
-      __asm__ volatile(
-        "mov %0, %%rdi\n"
-        "mov $3, %%rax\n"
-      "syscall" : : "g"(fd));
-      
-      return (int)ret;
+long _open(const char *path, unsigned long flags, long mode) {
+    long ret;
+    __asm__ volatile(
+      "mov %0, %%rdi\n"
+      "mov %1, %%rsi\n"
+      "mov %2, %%rdx\n"
+      "mov $2, %%rax\n"
+      "syscall" : : "g"(path), "g"(flags), "g"(mode));
+    asm ("mov %%rax, %0" : "=r"(ret));              
+
+    return ret;
+}
+
+int _close(unsigned int fd) {
+    long ret;
+    __asm__ volatile(
+      "mov %0, %%rdi\n"
+      "mov $3, %%rax\n"
+    "syscall" : : "g"(fd));
+
+    return (int)ret;
 }
 
 int _read(long fd, char *buf, unsigned long len) {
@@ -725,7 +765,7 @@ int _read(long fd, char *buf, unsigned long len) {
       "mov $0, %%rax\n"
       "syscall" : : "g"(fd), "g"(buf), "g"(len));
     asm("mov %%rax, %0" : "=r"(ret));
-    
+
     return (int)ret;
 }
 
