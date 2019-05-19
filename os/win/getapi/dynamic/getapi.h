@@ -34,7 +34,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "include/portable.h"
+#ifndef ROTR32
+#define ROTR32(v,n)(((v)>>(n))|((v)<<(32-(n))))
+#endif
 
 #ifndef _MSC_VER
 #ifdef __i386__

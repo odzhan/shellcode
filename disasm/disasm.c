@@ -371,7 +371,7 @@ void disasm (disasm_opt *opt)
     // print asm string
     if(insn->address < opt->data && r) printf (" /* %-*s */", asm_max, ins);  
   }
-  printf("\n};");
+  printf("\n};\n");
   
   cs_free(insn, 1);
   cs_close(&handle);  

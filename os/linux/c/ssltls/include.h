@@ -187,7 +187,10 @@ void *get_proc_address3(const char *path, uint32_t hash);  // using file path
 void *get_module_handle(const char *module);
 void *get_module_handle1(const char *module);
 void *get_module_handle2(const char *module);
+
 void *get_base(void);
+void *get_base2(void);
+void *get_base3(void);
 
 Elf64_Phdr *elf_get_phdr(void *base, int type);
 Elf64_Dyn *elf_get_dyn(void *base, int tag);
