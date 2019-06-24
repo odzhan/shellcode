@@ -28,7 +28,7 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
 
-; DLL loader in 311 bytes of x86 assembly (written for fun)
+; DLL loader in 309 bytes of x86 assembly (written for fun)
 ; odzhan
 
       %include "ds.inc"
@@ -164,9 +164,9 @@ hash_name:
       movzx  ecx, word[ebx + IMAGE_NT_HEADERS.FileHeader + \
                              IMAGE_FILE_HEADER.NumberOfSections - 30h]
       ; edx = IMAGE_FIRST_SECTION()
-      movzx  eax, word[ebx + IMAGE_NT_HEADERS.FileHeader + \
+      movzx  edx, word[ebx + IMAGE_NT_HEADERS.FileHeader + \
                              IMAGE_FILE_HEADER.SizeOfOptionalHeader - 30h]
-      lea    edx, [ebx + eax + IMAGE_NT_HEADERS.OptionalHeader - 30h]
+      lea    edx, [ebx + edx + IMAGE_NT_HEADERS.OptionalHeader - 30h]
 map_section:
       pushad
       add    edi, [edx + IMAGE_SECTION_HEADER.VirtualAddress]
@@ -176,32 +176,27 @@ map_section:
       popad
       add    edx, IMAGE_SECTION_HEADER_size
       loop   map_section
-      mov    ebx, edi
+      mov    ebp, edi
       ; process the import table
       pushad
       mov    ecx, [esp + _ds.ImportTable + pushad_t_size]
       jecxz  imp_l2
-      lea    ebp, [ecx + ebx]
+      lea    ebx, [ecx + ebp]
 imp_l0:
-      mov    esi, ebp
-      lodsd                   ; OriginalFirstThunk +00h
-      xchg   eax, edi         ; temporarily store in edi
-      lodsd                   ; TimeDateStamp      +04h
-      lodsd                   ; ForwarderChain     +08h
-      lodsd                   ; Name               +0Ch
-      xchg   eax, ecx
+      ; esi / oft = RVA2VA(PIMAGE_THUNK_DATA, cs, imp->OriginalFirstThunk);
+      mov    esi, [ebx+IMAGE_IMPORT_DESCRIPTOR.OriginalFirstThunk]
+      add    esi, ebp
+      ; edi / ft  = RVA2VA(PIMAGE_THUNK_DATA, cs, imp->FirstThunk);
+      mov    edi, [ebx+IMAGE_IMPORT_DESCRIPTOR.FirstThunk]
+      add    edi, ebp
+      mov    ecx, [ebx+IMAGE_IMPORT_DESCRIPTOR.Name]
+      add    ebx, IMAGE_IMPORT_DESCRIPTOR_size
       jecxz  imp_l2
-      add    ecx, ebx         ; name = RVA2VA(PCHAR, cs, imp->Name);
+      add    ecx, ebp         ; name = RVA2VA(PCHAR, cs, imp->Name);
       ; dll = LoadLibrary(name);
       push   ecx
       call   dword[esp + _ds.LoadLibraryA + 4 + pushad_t_size]  
       xchg   edx, eax         ; edx = dll
-      lodsd                   ; eax = imp->FirstThunk
-      mov    ebp, esi
-      ; oft = RVA2VA(PIMAGE_THUNK_DATA, cs, imp->OriginalFirstThunk);
-      lea    esi, [edi + ebx]
-      ; ft  = RVA2VA(PIMAGE_THUNK_DATA, cs, imp->FirstThunk);
-      lea    edi, [eax + ebx]
 imp_l1:
       lodsd                   ; eax = oft->u1.AddressOfData, oft++;
       xchg   eax, ecx
@@ -209,7 +204,7 @@ imp_l1:
       btr    ecx, 31
       jc     imp_Lx           ; IMAGE_SNAP_BY_ORDINAL(oft->u1.Ordinal)
       ; RVA2VA(PIMAGE_IMPORT_BY_NAME, cs, oft->u1.AddressOfData)
-      lea    ecx, [ecx + ebx + IMAGE_IMPORT_BY_NAME.Name]
+      lea    ecx, [ebp + ecx + IMAGE_IMPORT_BY_NAME.Name]
 imp_Lx:
       ; eax = GetProcAddress(dll, ecx);
       push   edx
@@ -223,9 +218,9 @@ imp_l2:
       popad
       ; ibr  = RVA2VA(PIMAGE_BASE_RELOCATION, cs, dir[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
       mov    esi, [esp + _ds.BaseRelocationTable]
-      add    esi, ebx
+      add    esi, ebp
       ; ofs  = (PBYTE)cs - opt->ImageBase;
-      mov    ebp, ebx
+      mov    ebx, ebp
       sub    ebp, [esp + _ds.ImageBase]
 reloc_L0:
       ; while (ibr->VirtualAddress != 0) {
@@ -248,11 +243,15 @@ reloc_L2:
       jne    reloc_L1
       jmp    reloc_L0
 call_entrypoint:
+  %ifndef EXE
       push   ecx                 ; lpvReserved
       push   DLL_PROCESS_ATTACH  ; fdwReason    
       push   ebx                 ; HINSTANCE   
       ; DllMain = RVA2VA(entry_exe, cs, opt->AddressOfEntryPoint);
       add    ebx, [esp + _ds.AddressOfEntryPoint + 3*4]
+  %else
+      add    ebx, [esp + _ds.AddressOfEntryPoint]
+  %endif
       call   ebx
       popad                  ; release _ds
       popad                  ; restore registers
