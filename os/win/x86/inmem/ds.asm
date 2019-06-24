@@ -28,7 +28,7 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
 
-; DLL loader in 309 bytes of x86 assembly (written for fun)
+; DLL loader in 307 bytes of x86 assembly (written for fun)
 ; odzhan
 
       %include "ds.inc"
@@ -64,12 +64,12 @@ init_api:
       pop    esi            ; esi = api hashes
       pushad                ; allocate 32 bytes of memory for _ds
       mov    edi, esp       ; edi = _ds
-      push   3              ; resolve three api
+      push   TEB.ProcessEnvironmentBlock
       pop    ecx
+      cdq                   ; eax should be < 0x80000000
 get_apis:
       lodsd                 ; eax = hash
       pushad
-      mov    cl, TEB.ProcessEnvironmentBlock
       mov    eax, [fs:ecx]
       mov    eax, [eax+PEB.Ldr]
       mov    edi, [eax+PEB_LDR_DATA.InLoadOrderModuleList + LIST_ENTRY.Flink]
@@ -125,8 +125,9 @@ hash_name:
       mov    [esp+_eax], ebx
       popad                        ; restore all
       stosd
-      loop   get_apis
-      mov    cl, (MEM_RESERVE | MEM_COMMIT) >> 8
+      inc    edx
+      jnp    get_apis              ; until PF = 1
+      
       ; dos = (PIMAGE_DOS_HEADER)ebx
       push   ebx
       add    ebx, [ebx+IMAGE_DOS_HEADER.e_lfanew]
