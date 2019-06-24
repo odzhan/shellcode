@@ -28,7 +28,7 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
 
-; DLL loader in 307 bytes of x86 assembly (written for fun)
+; DLL loader in 306 bytes of x86 assembly (written for fun)
 ; odzhan
 
       %include "ds.inc"
@@ -39,11 +39,10 @@
           .VirtualAlloc        resd 1 ; edi
           .LoadLibraryA        resd 1 ; esi
           .GetProcAddress      resd 1 ; ebp
-          .AddressOfEntryPoint resd 1 ; esp
-          .ImportTable         resd 1 ; ebx
-          .BaseRelocationTable resd 1 ; edx
+          .AddressOfEntryPoint resd 1 ; ebx
+          .ImportTable         resd 1 ; edx
+          .BaseRelocationTable resd 1 ; eax
           .ImageBase           resd 1 ; ecx
-          ; eax
       endstruc
 
       %ifndef BIN
@@ -85,27 +84,28 @@ get_dll:
                            IMAGE_OPTIONAL_HEADER32.DataDirectory + \
                            IMAGE_DIRECTORY_ENTRY_EXPORT * IMAGE_DATA_DIRECTORY_size + \
                            IMAGE_DATA_DIRECTORY.VirtualAddress]
-      jecxz  next_dll      
+      jecxz  next_dll
       ; esi = offset IMAGE_EXPORT_DIRECTORY.NumberOfNames 
       lea    esi, [ebx+ecx+IMAGE_EXPORT_DIRECTORY.NumberOfNames]
       lodsd
       xchg   eax, ecx
       jecxz  next_dll        ; skip if no names
-      push   edi             ; save edi
       ; save IMAGE_EXPORT_DIRECTORY.AddressOfFunctions     
       lodsd
       add    eax, ebx        ; eax = RVA2VA(eax, ebx)
-      push   eax             ; save address of functions
+      push   eax
       ; edi = IMAGE_EXPORT_DIRECTORY.AddressOfNames
       lodsd
       add    eax, ebx        ; eax = RVA2VA(eax, ebx)
-      xchg   eax, edi        ; swap(eax, edi)
+      xchg   eax, edx        ; swap(eax, edx)
       ; save IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals
       lodsd
       add    eax, ebx        ; eax = RVA(eax, ebx)
-      push   eax             ; save address of name ordinals
+      xchg   eax, edx
+      pop    esi
 get_name:
-      mov    esi, [edi+ecx*4-4] ; esi = RVA of API string
+      pushad
+      mov    esi, [eax+ecx*4-4] ; esi = RVA of API string
       add    esi, ebx           ; esi = RVA2VA(esi, ebx)
       xor    eax, eax           ; zero eax
       cdq                       ; h = 0
@@ -115,11 +115,9 @@ hash_name:
       ror    edx, 8
       dec    eax
       jns    hash_name
-      cmp    edx, [esp+_eax+3*4]   ; hashes match?
+      cmp    edx, [esp + _eax + pushad_t_size]   ; hashes match?
+      popad
       loopne get_name              ; --ecx && edx != hash
-      pop    edx                   ; edx = AddressOfNameOrdinals
-      pop    esi                   ; esi = AddressOfFunctions
-      pop    edi                   ; restore DLL entry
       jne    next_dll              ; get next DLL        
       movzx  eax, word [edx+ecx*2] ; eax = AddressOfNameOrdinals[eax]
       add    ebx, [esi+eax*4]      ; ecx = base + AddressOfFunctions[eax]
