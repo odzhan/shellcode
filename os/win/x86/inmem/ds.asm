@@ -252,7 +252,7 @@ call_entrypoint:
       push   DLL_PROCESS_ATTACH  ; fdwReason    
       push   ebx                 ; HINSTANCE   
       ; DllMain = RVA2VA(entry_exe, cs, opt->AddressOfEntryPoint);
-      add    ebx, [esp + _ds.AddressOfEntryPoint]
+      add    ebx, [esp + _ds.AddressOfEntryPoint + 3*4]
       call   ebx
       popad                  ; release _ds
       popad                  ; restore registers
