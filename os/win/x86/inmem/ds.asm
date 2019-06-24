@@ -39,9 +39,9 @@
           .VirtualAlloc        resd 1 ; edi
           .LoadLibraryA        resd 1 ; esi
           .GetProcAddress      resd 1 ; ebp
-          .AddressOfEntryPoint resd 1 ; ebx
-          .ImportTable         resd 1 ; edx
-          .BaseRelocationTable resd 1 ; eax
+          .AddressOfEntryPoint resd 1 ; esp
+          .ImportTable         resd 1 ; ebx
+          .BaseRelocationTable resd 1 ; edx
           .ImageBase           resd 1 ; ecx
       endstruc
 
@@ -98,7 +98,7 @@ get_dll:
       lodsd
       add    eax, ebx        ; eax = RVA2VA(eax, ebx)
       xchg   eax, edx        ; swap(eax, edx)
-      ; save IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals
+      ; save IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals      
       lodsd
       add    eax, ebx        ; eax = RVA(eax, ebx)
       xchg   eax, edx
