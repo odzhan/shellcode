@@ -90,24 +90,23 @@ get_dll:
       lodsd
       xchg   eax, ecx
       jecxz  next_dll        ; skip if no names
-      ; save IMAGE_EXPORT_DIRECTORY.AddressOfFunctions     
+      ; ebp = IMAGE_EXPORT_DIRECTORY.AddressOfFunctions     
       lodsd
-      add    eax, ebx        ; eax = RVA2VA(eax, ebx)
-      push   eax
-      ; edi = IMAGE_EXPORT_DIRECTORY.AddressOfNames
+      add    eax, ebx        ; ebp = RVA2VA(eax, ebx)
+      xchg   eax, ebp        ;
+      ; edx = IMAGE_EXPORT_DIRECTORY.AddressOfNames
       lodsd
-      add    eax, ebx        ; eax = RVA2VA(eax, ebx)
-      xchg   eax, edx        ; swap(eax, edx)
-      ; save IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals      
+      add    eax, ebx        ; edx = RVA2VA(eax, ebx)
+      xchg   eax, edx        ;
+      ; esi = IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals      
       lodsd
-      add    eax, ebx        ; eax = RVA(eax, ebx)
-      xchg   eax, edx
-      pop    esi
+      add    eax, ebx        ; esi = RVA(eax, ebx)
+      xchg   eax, esi
 get_name:
       pushad
-      mov    esi, [eax+ecx*4-4] ; esi = RVA of API string
+      mov    esi, [edx+ecx*4-4] ; esi = AddressOfNames[ecx-1]
       add    esi, ebx           ; esi = RVA2VA(esi, ebx)
-      xor    eax, eax           ; zero eax
+      xor    eax, eax           ; eax = 0
       cdq                       ; h = 0
 hash_name:    
       lodsb
@@ -119,8 +118,8 @@ hash_name:
       popad
       loopne get_name              ; --ecx && edx != hash
       jne    next_dll              ; get next DLL        
-      movzx  eax, word [edx+ecx*2] ; eax = AddressOfNameOrdinals[eax]
-      add    ebx, [esi+eax*4]      ; ecx = base + AddressOfFunctions[eax]
+      movzx  eax, word [esi+ecx*2] ; eax = AddressOfNameOrdinals[eax]
+      add    ebx, [ebp+eax*4]      ; ecx = base + AddressOfFunctions[eax]
       mov    [esp+_eax], ebx
       popad                        ; restore all
       stosd
