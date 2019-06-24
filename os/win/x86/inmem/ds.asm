@@ -39,10 +39,11 @@
           .VirtualAlloc        resd 1 ; edi
           .LoadLibraryA        resd 1 ; esi
           .GetProcAddress      resd 1 ; ebp
-          .AddressOfEntryPoint resd 1 ; ebx
-          .ImportTable         resd 1 ; edx
-          .BaseRelocationTable resd 1 ; eax
+          .AddressOfEntryPoint resd 1 ; esp
+          .ImportTable         resd 1 ; ebx
+          .BaseRelocationTable resd 1 ; edx
           .ImageBase           resd 1 ; ecx
+          ; eax
       endstruc
 
       %ifndef BIN
