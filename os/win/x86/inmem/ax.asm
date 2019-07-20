@@ -273,7 +273,7 @@ init_api:
       xor    eax, eax
       stosd                         ; IActiveScriptSiteWindow.lpVtbl = NULL
       
-	    ; 6. Set script site 
+      ; 6. Set script site 
       ; engine->lpVtbl->SetScriptSite(
       ;   engine, (IActiveScriptSite *)&mas);
       push    ebp                   ; &IMyActiveScriptSite
