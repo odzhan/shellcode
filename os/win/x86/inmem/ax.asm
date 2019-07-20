@@ -27,7 +27,7 @@
 ;  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
-; In-Memory execution of VBScript/JScript using 395 bytes of x86 assembly
+; In-Memory execution of VBScript/JScript using 392 bytes of x86 assembly
 ; Odzhan
 
       %include "ax.inc"
@@ -268,15 +268,14 @@ init_api:
       stosd                         ; vft.OnEnterScript       = (LPVOID)OnEnterScript;
       stosd                         ; vft.OnLeaveScript       = (LPVOID)OnLeaveScript;
       pop    eax                    ; eax = &vft
-      mov    ebp, edi               ; ebp = &IMyActiveScriptSite
-      stosd                         ; IActiveScriptSite.lpVtbl = &vft
-      xor    eax, eax
-      stosd                         ; IActiveScriptSiteWindow.lpVtbl = NULL
       
       ; 6. Set script site 
       ; engine->lpVtbl->SetScriptSite(
       ;   engine, (IActiveScriptSite *)&mas);
-      push    ebp                   ; &IMyActiveScriptSite
+      push    edi                   ; &IMyActiveScriptSite
+      stosd                         ; IActiveScriptSite.lpVtbl = &vft
+      xor     eax, eax
+      stosd                         ; IActiveScriptSiteWindow.lpVtbl = NULL
       push    esi                   ; engine
       mov     eax, [esi]
       call    dword[eax + IActiveScriptVtbl.SetScriptSite]
@@ -284,15 +283,14 @@ init_api:
       ; 7. Parse our script
       ; parser->lpVtbl->ParseScriptText(
       ;     parser, cs, 0, 0, 0, 0, 0, 0, 0, 0);
-      mov   ebp, esp
-      cdq
+      mov    edx, esp
       push   8
       pop    ecx
 init_parse:
-      push   edx
+      push   eax                    ; 0
       loop   init_parse
-      push   ebp
-      push   ebx
+      push   edx                    ; script
+      push   ebx                    ; parser
       mov    eax, [ebx]
       call   dword[eax + IActiveScriptParse32Vtbl.ParseScriptText]
       

@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
       printf("Unable to read file.\n");
       return 0;
     }
-    run_script(lang, script);
+    run_scriptx(script);
     return 0;
 }
 
