@@ -1,0 +1,37 @@
+
+
+
+variable length structure
+    ; shadow or home space for API call
+    struc home_space
+      ._rcx  resq 1
+      ._rdx  resq 1
+      ._r8   resq 1
+      ._r9   resq 1
+    endstruc
+
+    ; structure for stack allocation
+    struc work_space
+      hs                   resb home_space_size
+      
+      arg0                 resq 1
+      arg1                 resq 1
+      arg2                 resq 1
+      arg3                 resq 1
+      arg4                 resq 1
+      
+      ; local variables
+      inlen                resd 1
+      outlen               resd 1
+      outbuf               resq 1
+      
+      ; function pointers
+      _lstrlenA            resq 1
+      _CryptStringToBinary resq 1
+      _VirtualAlloc        resq 1
+      _VirualFree          resq 1
+      _RtlExitUserThread   resq 1
+    endstruc
+
+    %define WORK_SPACE_LEN ((work_space_size & -16) + 16) - 8 
+    

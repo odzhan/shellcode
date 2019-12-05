@@ -1,0 +1,71 @@
+
+                         In-Memory PE EXE Execution
+                         --------------------------
+
+                        additional stuff: INMEM\*.*
+
+     Lets  consider  the  following situation: we wanna work on some remote
+ machine;  and we alredy exploited it with some small piece of code and now
+ we can upload there and then execute some file.
+
+     Question:  where  this  uploaded  and  executed file will be temporary
+ located? Continue reading, while thinking about.
+
+     For  sure,  this main exe file will perform some critical tasks, maybe
+ hack  other  machines,  or  maybe it will contain critical info about you,
+ about other IP addresses used in operation, ot whatever.
+     It  is  clear,  that  such  program  should have minimal chances to be
+ catched.
+
+     So, how to solve this problem?
+
+     First, while passing this program to remote machine, encryption should
+ be  used,  so  traffic  sniffing will not allow obtaining program in plain
+ form.  Info  about shared secret establishing can be found in "Handbook of
+ Applied Cryptography", http://www.cacr.math.uwaterloo.ca/
+
+     Second,  lets  keep this program not as a file on disk, but in memory.
+ So,  if  somebody will turn machine off, and then analyze hd, he will find
+ nothing.
+
+     These  two  things will give us enough reliability, in most cases. But
+ there are still some problems:
+
+     - memory image of our program still has chances to get into debug dump
+       in case of gpf.
+     - hibernating machine will create the same image, so it should be
+       handled.
+     - debuggers and other special kind of stuff should be checked.
+     - memory image will be able to be read by means of ReadProcessMemory
+       or from ring0.
+
+     Now, about stuff i'm showing you here.
+
+     InMem  Client  is  a  program, which, when executed on remote machine,
+ connects to ZFTP Server and downloads main PE EXE file, and then, executes
+ in the context of own process.
+
+     InMem  Client has special feature: program, to be executed under InMem
+ Client, can import (by ordinal) three special functions from KERNEL32.DLL:
+
+   extern "C" {              // ordinal  action:
+     void  WINAPI FuckMe();  //  55666   zerofill program in memory & quit
+     DWORD WINAPI MySize();  //  55667   get len of PE EXE file in memory
+     BYTE* WINAPI MyData();  //  55668   get ptr to PE EXE file in memory
+   };
+
+     These  functions,  for  sure,  will be imported not from KERNEL32, but
+ from  InMem  Client,  which  will  in  this way allow main program to find
+ itself in memory and to quit safely.
+
+     To test this stuff, do the following:
+
+     1. run ZFTP Server serving TEST.EXE on current machine
+     2. run INMEM Client passing 127.0.0.1 as 1st argument
+     3. see log in INMEM directory
+
+     As  you can understand now, InMem Client processes PE structure in own
+ way,  skipping  TLS,  ExportTable,  and  other  minor  things,  so it will
+ probably work with not every program you have.
+
+                                   * * *
