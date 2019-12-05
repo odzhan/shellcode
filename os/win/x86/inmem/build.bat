@@ -1,4 +1,10 @@
 @echo off
+echo Creating bin files
 yasm -fbin -DBIN ds.asm -ods.bin
-yasm -fwin32 ds.asm -ods.obj
-cl ds_test.c ds.obj
+yasm -fbin -DBIN ax.asm -oax.bin
+echo Creating obj files
+yasm -fwin32 -DEXE ds.asm -ods.obj
+yasm -fwin32 ax.asm -oax.obj
+cl /nologo hello.c
+cl /nologo ds_test.c ds.obj
+cl /nologo ax_test.c ax.obj

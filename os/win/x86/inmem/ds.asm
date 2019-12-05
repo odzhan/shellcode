@@ -29,9 +29,11 @@
 ;
 
 ; DLL loader in 306 bytes of x86 assembly (written for fun)
+; Might work with some EXE. Missing some steps.
 ; odzhan
 
-      %include "ds.inc"
+      %define X86
+      %include "include.inc"
 
       bits   32
 
@@ -51,7 +53,7 @@
       %endif
       
 load_dllx:
-_load_dllx: 
+_load_dllx:
       pop    eax            ; eax = return address
       pop    ebx            ; ebx = base of PE file
       push   eax            ; save return address on stack
@@ -78,10 +80,13 @@ next_dll:
       mov    edi, [edi+LDR_DATA_TABLE_ENTRY.InLoadOrderLinks + LIST_ENTRY.Flink]
 get_dll:
       mov    ebx, [edi+LDR_DATA_TABLE_ENTRY.DllBase]
+      test   ebx, ebx
+      jz     exit_api
+      
       mov    eax, [ebx+IMAGE_DOS_HEADER.e_lfanew]
       ; ecx = IMAGE_DATA_DIRECTORY.VirtualAddress
       mov    ecx, [ebx+eax+IMAGE_NT_HEADERS.OptionalHeader + \
-                           IMAGE_OPTIONAL_HEADER32.DataDirectory + \
+                           IMAGE_OPTIONAL_HEADER.DataDirectory + \
                            IMAGE_DIRECTORY_ENTRY_EXPORT * IMAGE_DATA_DIRECTORY_size + \
                            IMAGE_DATA_DIRECTORY.VirtualAddress]
       jecxz  next_dll
@@ -120,8 +125,11 @@ hash_name:
       jne    next_dll              ; get next DLL        
       movzx  eax, word [esi+ecx*2] ; eax = AddressOfNameOrdinals[eax]
       add    ebx, [ebp+eax*4]      ; ecx = base + AddressOfFunctions[eax]
+exit_api:
       mov    [esp+_eax], ebx
       popad                        ; restore all
+      test   eax, eax
+      jz     exit_load
       stosd
       inc    edx
       jnp    get_apis              ; until PF = 1
@@ -132,17 +140,20 @@ hash_name:
       add    ebx, ecx
       ; esi = &nt->OptionalHeader.AddressOfEntryPoint
       lea    esi, [ebx+IMAGE_NT_HEADERS.OptionalHeader + \
-                       IMAGE_OPTIONAL_HEADER32.AddressOfEntryPoint - 30h]
+                       IMAGE_OPTIONAL_HEADER.AddressOfEntryPoint - \
+                       TEB.ProcessEnvironmentBlock]
       movsd          ; [edi+ 0] = AddressOfEntryPoint
       mov    eax, [ebx+IMAGE_NT_HEADERS.OptionalHeader + \
-                       IMAGE_OPTIONAL_HEADER32.DataDirectory + \
+                       IMAGE_OPTIONAL_HEADER.DataDirectory + \
                        IMAGE_DIRECTORY_ENTRY_IMPORT * IMAGE_DATA_DIRECTORY_size + \
-                       IMAGE_DATA_DIRECTORY.VirtualAddress - 30h]
+                       IMAGE_DATA_DIRECTORY.VirtualAddress - \
+                       TEB.ProcessEnvironmentBlock]
       stosd          ; [edi+ 4] = Import Directory Table RVA
       mov    eax, [ebx+IMAGE_NT_HEADERS.OptionalHeader + \
-                       IMAGE_OPTIONAL_HEADER32.DataDirectory + \
+                       IMAGE_OPTIONAL_HEADER.DataDirectory + \
                        IMAGE_DIRECTORY_ENTRY_BASERELOC * IMAGE_DATA_DIRECTORY_size + \
-                       IMAGE_DATA_DIRECTORY.VirtualAddress - 30h]
+                       IMAGE_DATA_DIRECTORY.VirtualAddress - \
+                       TEB.ProcessEnvironmentBlock]
       stosd          ; [edi+ 8] = Base Relocation Table RVA
       lodsd          ; skip BaseOfCode
       lodsd          ; skip BaseOfData
@@ -152,8 +163,8 @@ hash_name:
       push   PAGE_EXECUTE_READWRITE
       xchg   cl, ch
       push   ecx
-      push   dword[esi + IMAGE_OPTIONAL_HEADER32.SizeOfImage - \
-                         IMAGE_OPTIONAL_HEADER32.SectionAlignment]
+      push   dword[esi + IMAGE_OPTIONAL_HEADER.SizeOfImage - \
+                         IMAGE_OPTIONAL_HEADER.SectionAlignment]
       push   0                           ; NULL
       call   dword[esp + _ds.VirtualAlloc + 5*4]
       xchg   eax, edi                    ; edi = cs
@@ -161,11 +172,14 @@ hash_name:
       
       ; load number of sections
       movzx  ecx, word[ebx + IMAGE_NT_HEADERS.FileHeader + \
-                             IMAGE_FILE_HEADER.NumberOfSections - 30h]
+                             IMAGE_FILE_HEADER.NumberOfSections - \
+                             TEB.ProcessEnvironmentBlock]
       ; edx = IMAGE_FIRST_SECTION()
       movzx  edx, word[ebx + IMAGE_NT_HEADERS.FileHeader + \
-                             IMAGE_FILE_HEADER.SizeOfOptionalHeader - 30h]
-      lea    edx, [ebx + edx + IMAGE_NT_HEADERS.OptionalHeader - 30h]
+                             IMAGE_FILE_HEADER.SizeOfOptionalHeader - \
+                             TEB.ProcessEnvironmentBlock]
+      lea    edx, [ebx + edx + IMAGE_NT_HEADERS.OptionalHeader - \
+                               TEB.ProcessEnvironmentBlock]
 map_section:
       pushad
       add    edi, [edx + IMAGE_SECTION_HEADER.VirtualAddress]
@@ -252,6 +266,7 @@ call_entrypoint:
       add    ebx, [esp + _ds.AddressOfEntryPoint]
   %endif
       call   ebx
+exit_load:
       popad                  ; release _ds
       popad                  ; restore registers
       ret

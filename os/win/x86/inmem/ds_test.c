@@ -22,10 +22,13 @@ typedef struct _IMAGE_RELOC {
 } IMAGE_RELOC, *PIMAGE_RELOC;
 
 typedef BOOL (WINAPI *DllMain_t)(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
-typedef VOID (WINAPI *entry_exe)(VOID);
+typedef VOID (WINAPI *Start_t)(VOID);
 
+    // set the commandline for this process
+    #include "getapi.h"
+    
 VOID load_dllx(LPVOID base);
-
+   
 VOID load_dll(LPVOID base) {
     PIMAGE_DOS_HEADER        dos;
     PIMAGE_NT_HEADERS        nt;
@@ -41,6 +44,7 @@ VOID load_dll(LPVOID base) {
     HMODULE                  dll;
     ULONG_PTR                ptr;
     DllMain_t                DllMain;
+    Start_t                  Start;
     LPVOID                   cs;
     DWORD                    i, cnt;
     
@@ -108,9 +112,14 @@ VOID load_dll(LPVOID base) {
       ibr = (PIMAGE_BASE_RELOCATION)list;
     }
 
-    // execute entrypoint
-    DllMain = RVA2VA(DllMain_t, cs, nt->OptionalHeader.AddressOfEntryPoint);
-    DllMain(cs, DLL_PROCESS_ATTACH, NULL);
+    // if this is a DLL, execute DllMain
+    if(nt->FileHeader.Characteristics & IMAGE_FILE_DLL) {
+      DllMain = RVA2VA(DllMain_t, cs, nt->OptionalHeader.AddressOfEntryPoint);
+      DllMain(cs, DLL_PROCESS_ATTACH, NULL);
+    } else {
+      Start = RVA2VA(Start_t, cs, nt->OptionalHeader.AddressOfEntryPoint);
+      Start();
+    }
 }
 
 int main(int argc, char *argv[]) {

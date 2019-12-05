@@ -30,7 +30,8 @@
 ; In-Memory execution of VBScript/JScript using 392 bytes of x86 assembly
 ; Odzhan
 
-      %include "ax.inc"
+      %define X86
+      %include "include.inc"
       
       %define VBS
       
@@ -87,7 +88,7 @@ get_dll:
       mov    eax, [ebx+IMAGE_DOS_HEADER.e_lfanew]
       ; ecx = IMAGE_DATA_DIRECTORY[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress
       mov    ecx, [ebx+eax+IMAGE_NT_HEADERS.OptionalHeader + \
-                           IMAGE_OPTIONAL_HEADER32.DataDirectory + \
+                           IMAGE_OPTIONAL_HEADER.DataDirectory + \
                            IMAGE_DIRECTORY_ENTRY_EXPORT * IMAGE_DATA_DIRECTORY_size + \
                            IMAGE_DATA_DIRECTORY.VirtualAddress]
       jecxz  next_dll
