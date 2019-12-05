@@ -27,7 +27,7 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#include "getapi.h"
+#include "peb.h"
 
 LPVOID GetGPA(VOID) {
     PPEB                  peb;
@@ -41,7 +41,7 @@ LPVOID GetGPA(VOID) {
     DWORD                 i, j, h;
     PBYTE                 cs;
     
-    peb = (PPEB) __readfsdword(0x30);
+    peb = NtCurrentTeb()->ProcessEnvironmentBlock;
     ldr = (PPEB_LDR_DATA)peb->Ldr;
     
     // for each DLL loaded
@@ -86,15 +86,16 @@ LPVOID GetGPA(VOID) {
 }
 
 int main(void) {
-
+    LPVOID addr = GetGPA();
+    
     if (addr != NULL) {
       printf ("GetProcAddress: %p\n", addr);
       
       printf ("GetProcAddress: %p\n", 
-          GetProcAddress("kernelbase", "GetProcAddress"));
+          (LPVOID)GetProcAddress(GetModuleHandle("kernelbase"), "GetProcAddress"));
           
       printf ("GetProcAddressForCaller: %p\n", 
-          GetProcAddress("kernelbase", "GetProcAddressForCaller"));
+          (LPVOID)GetProcAddress(GetModuleHandle("kernelbase"), "GetProcAddressForCaller"));
     }
     return 0;
 }

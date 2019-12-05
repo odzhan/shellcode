@@ -29,6 +29,9 @@
 
 #include "peb.h"
   
+LPVOID get_api(DWORD);
+LPVOID get_apix(DWORD);
+
 // converts string to lowercase
 uint32_t crc32c(const char *s) {
     int      i;
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
   
   h = dll_h + api_h;
   
-  p = get_api(h);
+  p = get_apix(h);
   // if not found
   if (p==NULL) {
     // load the module into memory
@@ -201,7 +204,7 @@ int main(int argc, char *argv[])
       return 0;
     }
     // then try again
-    p = get_api(h);
+    p = get_apix(h);
   }
   if (p==NULL) {
     printf ("\nUnable to locate API address \"%s\"", argv[2]);

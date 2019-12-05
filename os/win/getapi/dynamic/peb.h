@@ -33,6 +33,8 @@
 #define PEB_H
 
 #include <windows.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #ifndef ROTR32
 #define ROTR32(v,n)(((v)>>(n))|((v)<<(32-(n))))
