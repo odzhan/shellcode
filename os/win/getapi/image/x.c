@@ -27,12 +27,11 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
   
-#include "getapi.h"
+#include "peb.h"
 
 typedef UINT (WINAPI *WinExec_t)(LPCSTR lpCmdLine, UINT uCmdShow);
 
-void xWinExec(char *cmd)
-{
+void xWinExec(const char *cmd) {
     PIMAGE_DOS_HEADER       dos;
     PIMAGE_NT_HEADERS       nt;
     DWORD                   cnt, rva, dll_h;
@@ -48,12 +47,7 @@ void xWinExec(char *cmd)
     LPVOID                  base;
     WinExec_t               pWinExec=NULL;
   
-#if defined(_WIN64)
-    peb  = (PPEB) __readgsqword(0x60);
-#else
-    peb  = (PPEB) __readfsdword(0x30);
-#endif
-
+    peb  = NtCurrentTeb()->ProcessEnvironmentBlock;
     ldr  = (PPEB_LDR_DATA)peb->Ldr;
     dte  = (PLDR_DATA_TABLE_ENTRY)ldr->InLoadOrderModuleList.Flink;
     

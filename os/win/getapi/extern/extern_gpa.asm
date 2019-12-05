@@ -27,11 +27,39 @@
 ;  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
-    
-    %define X86
-    %include "../../include.inc"
-    
+
     bits 32
+
+struc pushad_t
+  _edi resd 1
+  _esi resd 1
+  _ebp resd 1
+  _esp resd 1
+  _ebx resd 1
+  _edx resd 1
+  _ecx resd 1
+  _eax resd 1
+  .size:
+endstruc
+
+; macro that generates hash based on metasploit algorithm
+; converts string to lowercase
+%macro cmpms 1.nolist
+  %assign %%h 0  
+  %strlen %%len %1
+  %assign %%i 1
+  
+  %rep %%len
+    %substr %%c %1 %%i
+    %assign %%h ((%%h >> 13) & 0FFFFFFFFh) | (%%h << (32-13))
+    %assign %%c (%%c | 0x20)    
+    %assign %%h ((%%h + %%c) & 0FFFFFFFFh)
+    %assign %%i (%%i+1)
+  %endrep
+  ; cmp edx, hash
+  db 081h, 0fah
+  dd %%h
+%endmacro
 
 ; returns    
 ;   ebx = pointer to LoadLibraryA    
@@ -39,7 +67,7 @@
     push   esi
     push   edi
     
-    push   TEB.ProcessEnvironmentBlock
+    push   30h
     pop    edx
 
     mov    esi, [fs:edx]  ; eax = (PPEB) __readfsdword(0x30);

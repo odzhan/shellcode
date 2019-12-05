@@ -28,7 +28,7 @@
   POSSIBILITY OF SUCH DAMAGE. */
 
 
-#include "getapi.h"
+#include "peb.h"
 
 typedef BYTE UBYTE;
 

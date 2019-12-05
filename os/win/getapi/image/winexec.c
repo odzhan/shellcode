@@ -27,7 +27,7 @@
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
   
-#include "getapi.h"
+#include "peb.h"
 
 int main(void)
 {
@@ -44,12 +44,7 @@ int main(void)
   PIMAGE_THUNK_DATA        oft, ft;
   PIMAGE_IMPORT_BY_NAME    ibn;
   
-#if defined(_WIN64)
-  peb = (PPEB) __readgsqword(0x60);
-#else
-  peb = (PPEB) __readfsdword(0x30);
-#endif
-
+  peb  = NtCurrentTeb()->ProcessEnvironmentBlock;
   base = peb->ImageBaseAddress;
   dos  = (PIMAGE_DOS_HEADER)base;
   nt   = RVA2VA(PIMAGE_NT_HEADERS, base, dos->e_lfanew);

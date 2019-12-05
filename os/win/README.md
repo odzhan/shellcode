@@ -1,7 +1,7 @@
 
 ## About ##
 
-These are a collection of *Position Independent Code* (PIC) for Windows, tested on Windows NT released in 1996 up to Windows 10 released in 2015.
+These are a collection of *Position-Independent Code* (PIC) that were tested on Windows NT released in 1996 up to Windows 10 released in 2015.
 
 ## Multimode codes ##
 

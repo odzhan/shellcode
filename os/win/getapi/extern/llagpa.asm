@@ -1,5 +1,5 @@
 ;
-;  Copyright © 2017 Joshua Pitts, Odzhan. All Rights Reserved.
+;  Copyright © 2019 Odzhan. All Rights Reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
 ;  modification, are permitted provided that the following conditions are
@@ -33,46 +33,54 @@
     
     bits 32
 
-; returns    
+    %ifndef BIN
+      global get_lla_gpa
+    %endif
+    
+; INPUT:
+;   eax = hash of DLL
+; OUTPUT:    
 ;   ebx = pointer to LoadLibraryA    
 ;   ebp = pointer to GetProcAddress
-    push   esi
-    push   edi
-    
+;
+get_lla_gpa:
+    xor    ebx, ebx
+    xor    ebp, ebp
+    pushad
     push   TEB.ProcessEnvironmentBlock
     pop    edx
+    mov    esi, [fs:edx]
+    mov    esi, [esi+PEB.Ldr]
+    mov    edi, [esi+PEB_LDR_DATA.InLoadOrderModuleList + LIST_ENTRY.Flink]
+    jmp    scan_dll
+next_dll:
+    mov    edi, [edi+LDR_DATA_TABLE_ENTRY.InLoadOrderLinks + LIST_ENTRY.Flink] 
+scan_dll:
+    mov    ebx, [edi+LDR_DATA_TABLE_ENTRY.DllBase]
+    test   ebx, ebx
+    jz     exit_lla_gpa
 
-    mov    esi, [fs:edx]  ; eax = (PPEB) __readfsdword(0x30);
-    mov    esi, [esi+0ch] ; eax = (PMY_PEB_LDR_DATA)peb->Ldr
-    mov    edi, [esi+0ch] ; edi = ldr->InLoadOrderModuleList.Flink
-gapi_l0:
-    mov    edi, [edi]     ; edi = dte->InLoadOrderLinks.Flink  
-    mov    ebx, [edi+18h] ; ebx = dte->DllBase
-gapi_l1:
-    push   edx 
-    movzx  ecx, word[edi+44]  ; ecx = BaseDllName.Length
-    mov    esi, [edi+48]      ; esi = BaseDllName.Buffer
+    movzx  ecx, word[edi+LDR_DATA_TABLE_ENTRY.BaseDllName + UNICODE_STRING.Length]
+    mov    esi, [edi+LDR_DATA_TABLE_ENTRY.BaseDllName + UNICODE_STRING.Buffer]
     shr    ecx, 1
     xor    eax, eax
     cdq
-gapi_l2:
+hash_dll_name:
     lodsw
     or     al, 0x20
     ror    edx, 13
     add    edx, eax
-    loop   gapi_l2
-    ; target DLL?
-    cmpms  "advapi32.dll"
-    pop    edx
-    jne    gapi_l0    
-   
-    ; we have target DLL, now search for kernel32.dll
-    ; in import directory
-    ; edx += IMAGE_DOS_HEADER.e_lfanew
-    add    edx, [ebx+3ch]  
-    mov    esi, [ebx+edx+50h]
+    loop   hash_dll_name
+    cmp    edx, [esp + pushad_t._eax]
+    jne    next_dll    
+
+    mov    edx, [ebx+IMAGE_DOS_HEADER.e_lfanew]  
+    mov    esi, [ebx+edx+IMAGE_NT_HEADERS.OptionalHeader + \
+                         IMAGE_OPTIONAL_HEADER.DataDirectory + \
+                         IMAGE_DIRECTORY_ENTRY_EXPORT * IMAGE_DATA_DIRECTORY_size + \
+                         IMAGE_DATA_DIRECTORY.VirtualAddress]
     add    esi, ebx
-imp_l0:
+next_desc:
     lodsd                   ; OriginalFirstThunk +00h
     xchg   eax, ebp         ; store in ebp
     lodsd                   ; TimeDateStamp      +04h
@@ -85,50 +93,49 @@ imp_l0:
     mov    eax, [edx+ebx]
     or     eax, 20202020h   ; convert to lowercase
     cmp    eax, 'kern'
-    jnz    imp_l0
+    jnz    next_desc
     
     mov    eax, [edx+ebx+4]
     or     eax, 20202020h   ; convert to lowercase
     cmp    eax, 'el32'
-    jnz    imp_l0
+    jnz    next_desc
  
-    ; locate GetProcAddress
+    ; ebp = GetProcAddress
     mov    ecx, 'GetP'
     mov    edx, 'ddre'
-    call   get_imp
-    push   eax               ; save pointer 
+    call   get_api
+    mov    [esp + pushad_t._ebp], eax
     
-    ; locate LoadLibraryA
+    ; ebx = LoadLibraryA
     mov    ecx, 'Load'
     mov    edx, 'aryA'
-    call   get_imp
-    pop    ebp               ; ebp = GetProcAddress
-    xchg   eax, ebx          ; ebx = LoadLibraryA
-    
-    pop    edi
-    pop    esi
+    call   get_api
+    mov    [esp + pushad_t._ebx], eax
+exit_lla_gpa:
+    popad
     ret
 
     ; -------------
-get_imp:
+get_api:
     push   esi
     push   edi
     lea    esi, [ebp+ebx]     ; esi = OriginalFirstThunk + base
     add    edi, ebx           ; edi = FirstThunk + base
-gi_l0:
+find_api:
     lodsd                     ; eax = oft->u1.Function, oft++;
     scasd                     ; ft++;
     test   eax, eax
-    js     gi_l0              ; skip ordinals 
+    jz     exit_find
+    js     find_api           ; skip ordinals 
     
     cmp    dword[eax+ebx+2], ecx
-    jnz    gi_l0
+    jnz    find_api
 
     cmp    dword[eax+ebx+10], edx
-    jnz    gi_l0
+    jnz    find_api
     
     mov    eax, [edi-4]       ; eax = ft->u1.Function
-gi_l1:
+exit_find:
     pop    edi
     pop    esi
     ret    
