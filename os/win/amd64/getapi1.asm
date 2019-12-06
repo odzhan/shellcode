@@ -34,7 +34,7 @@
 
     bits   64
     
-    %include "include.inc"
+    %include "../include.inc"
     
     %ifndef BIN
       global get_api1
@@ -47,7 +47,7 @@
 get_api1:
     ; save non-volatile registers
     pushx  rsi, rbx, rdi, rbp
-    mov    r8d, ecx              ; r8d = hash to find
+    mov    r8d, eax              ; r8d = hash to find
     jmp    init_hash_function
 init_hash:
     pop    r9                    ; r9 = hash function
@@ -121,11 +121,13 @@ hash_string:
     cdq                          ; h = 0
 hash_loop:                       ; do {
     lodsb                        ;   c = *str++
+    or     al, al
+    jz     exit_hash
     or     al, 0x20              ;
     add    edx, eax              ;   h += (c | 0x20)
     ror    edx, 8                ;   h = ROTR32(h, 8)
-    cmp    al, 0x20              ; } while(c != 0)
-    jnz    hash_loop             
+    jmp    hash_loop
+exit_hash:         
     xchg   eax, edx              ; eax = h
     popx   rdx, rsi
     ret

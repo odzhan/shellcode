@@ -28,7 +28,51 @@
 ;  POSSIBILITY OF SUCH DAMAGE.
 ;
 
-    ; macro that converts string to lowercase 
+%ifndef INCLUDE_H
+%define INCLUDE_H
+
+    %macro crc32_call 3
+      %assign %%h 0            ; h = 0
+      %strlen %%len %1         ; len = strlen(str)
+      %assign %%s 1            ; s = str
+      
+      ; first, hash the DLL name
+      %rep %%len
+        %substr %%c %1 %%s                     ; c = *str
+        %assign %%c (%%c | 0x20)               ; c = (c | 0x20)
+        %assign %%b (%%c + (%%h & 0xFF))
+        %assign %%h (%%h >> 8)
+        %rep 8
+          %assign %%b (%%b >> 1) ^ ((0x82F63B78 * (%%b & 1)) & 0xFFFFFFFF)  
+        %endrep
+        %assign %%h (%%h ^ %%b)
+        %assign %%s (%%s + 1)
+      %endrep
+      
+      %assign %%dll_h %%h
+
+      %assign %%h 0
+      %strlen %%len %2
+      %assign %%s 1
+      
+      ; then the api
+      %rep %%len
+        %substr %%c %2 %%s
+        %assign %%c (%%c | 0x20)
+        %assign %%b (%%c ^ (%%h & 0xFF))
+        %assign %%h (%%h >> 8)    
+        %rep 8
+          %assign %%b (%%b >> 1) ^ ((0x82F63B78 * (%%b & 1)) & 0xFFFFFFFF) 
+        %endrep
+        %assign %%h (%%h ^ %%b)
+        %assign %%s (%%s + 1)
+      %endrep
+      
+      mov  cl, %3 
+      db   0b8h
+      dd   (%%dll_h + %%h) & 0xFFFFFFFF
+    %endmacro
+    
     %macro cmpms 1.nolist
       %assign %%h 0  
       %strlen %%len %1
@@ -46,6 +90,45 @@
       dd %%h
     %endmacro
 
+    %macro lookup 2
+      %assign %%h 0            ; h = 0
+      %strlen %%len %1         ; len = strlen(str)
+      %assign %%s 1            ; s = str
+      
+      ; first, hash the DLL name
+      %rep %%len
+        %substr %%c %1 %%s                     ; c = *str
+        %assign %%c (%%c | 0x20)               ; c = (c | 0x20)
+        %assign %%h ((%%c + %%h) & 0FFFFFFFFh)
+        %assign %%h ((%%h >> 8) & 0FFFFFFFFh) | (((%%h << (32 - 8)) & 0FFFFFFFFh))
+        %assign %%s (%%s + 1)
+      %endrep
+      
+      %assign %%dll_h %%h
+
+      %assign %%h 0
+      %strlen %%len %2
+      %assign %%s 1
+      
+      ; then the api
+      %rep %%len
+        %substr %%c %2 %%s                     ; c = *str
+        %assign %%c (%%c | 0x20)               ; c = (c | 0x20)
+        %assign %%h ((%%c + %%h) & 0FFFFFFFFh)
+        %assign %%h ((%%h >> 8) & 0FFFFFFFFh) | (((%%h << (32 - 8)) & 0FFFFFFFFh))
+        %assign %%s (%%s + 1)
+      %endrep
+
+      db   0b8h
+      dd   (%%dll_h + %%h) & 0xFFFFFFFF
+      
+      %ifdef X86
+        call ebp
+      %else
+        call rbp
+      %endif
+    %endmacro
+    
     %macro  pushx 1-*
         %rep  %0
           push    %1
@@ -94,7 +177,8 @@
 %define INFINITE -1
 
 %define DLL_PROCESS_ATTACH                    1
-%define CRYPT_STRING_ANY        7
+%define CRYPT_STRING_BASE64                   1
+%define CRYPT_STRING_ANY                      7
 
 %define IMAGE_DIRECTORY_ENTRY_EXPORT          0   ; Export Directory
 %define IMAGE_DIRECTORY_ENTRY_IMPORT          1   ; Import Directory
@@ -478,5 +562,5 @@ endstruc
 
 %endif
 
-
+%endif
 
