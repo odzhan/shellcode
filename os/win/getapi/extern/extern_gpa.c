@@ -28,6 +28,7 @@
   POSSIBILITY OF SUCH DAMAGE. */
 
 #include "peb.h"
+#include <stdio.h>
 
 #define DLL_HASH 0x42CCF79F // advapi32.dll
 
@@ -64,45 +65,42 @@ int main(void) {
         hash += dll[i] | 0x20;  
       }
       
-      // is this our target DLL?
-      if (hash == DLL_HASH) 
-      {      
-        base = dte->DllBase;
-        dos  = (PIMAGE_DOS_HEADER)base;
-        nt   = RVA2VA(PIMAGE_NT_HEADERS, base, dos->e_lfanew);
-        dir  = (PIMAGE_DATA_DIRECTORY)nt->OptionalHeader.DataDirectory;
-        rva  = dir[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;  
-        imp  = (PIMAGE_IMPORT_DESCRIPTOR) RVA2VA(ULONG_PTR, base, rva);
-    
-        // locate kernel32.dll
-        for (;imp->Name!=0;imp++) 
-        {
-          name = RVA2VA(PDWORD, base, imp->Name);
+      // if not our target DLL, skip it
+      if (hash != DLL_HASH) continue; 
+      
+      base = dte->DllBase;
+      dos  = (PIMAGE_DOS_HEADER)base;
+      nt   = RVA2VA(PIMAGE_NT_HEADERS, base, dos->e_lfanew);
+      dir  = (PIMAGE_DATA_DIRECTORY)nt->OptionalHeader.DataDirectory;
+      rva  = dir[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;  
+      imp  = RVA2VA(PIMAGE_IMPORT_DESCRIPTOR, base, rva);
+  
+      // for each DLL with imports
+      for (;imp->Name!=0;imp++) {
+        name = RVA2VA(PDWORD, base, imp->Name);
+        
+        // if not kernel32.dll, skip it
+        if ((name[0] | 0x20202020) != 'nrek' || 
+            (name[1] | 0x20202020) != '23le') continue;
+
+        // locate GetProcAddress
+        rva = imp->OriginalFirstThunk;
+        oft = RVA2VA(PIMAGE_THUNK_DATA, base, rva);
+        
+        rva = imp->FirstThunk;
+        ft  = RVA2VA(PIMAGE_THUNK_DATA, base, rva);
           
-          if ((name[0] | 0x20202020) == 'nrek' && 
-              (name[1] | 0x20202020) == '23le')
-          {
-            // locate GetProcAddress
-            rva = imp->OriginalFirstThunk;
-            oft = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
-            
-            rva = imp->FirstThunk;
-            ft  = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
-              
-            for (;; oft++, ft++) 
-            {
-              rva = oft->u1.AddressOfData;
-              if (rva==0) break;
-              
-              ibn = (PIMAGE_IMPORT_BY_NAME)RVA2VA(ULONG_PTR, base, rva);
-              name = (PDWORD)ibn->Name;
-              
-              // is this GetProcAddress?
-              if (name[0] == 'PteG' && name[2] == 'erdd') {
-                gpa = (LPVOID)ft->u1.Function;
-                break;
-              }
-            }
+        for (;; oft++, ft++) {
+          rva = oft->u1.AddressOfData;
+          if (rva==0) break;
+          
+          ibn = RVA2VA(PIMAGE_IMPORT_BY_NAME, base, rva);
+          name = (PDWORD)ibn->Name;
+          
+          // is this GetProcAddress?
+          if (name[0] == 'PteG' && name[2] == 'erdd') {
+            gpa = (LPVOID)ft->u1.Function;
+            break;
           }
         }
       }

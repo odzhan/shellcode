@@ -103,6 +103,7 @@ decode_main:
 
     lookup "crypt32.dll",  "CryptStringToBinaryA"
     stosq
+    ; should check here for failure since crypt32.dll mightn't be loaded.
     
     ; inlen = lstrlenA(inbuf)
     xor    eax, eax

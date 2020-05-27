@@ -30,17 +30,17 @@
 #include "peb.h"
 
 LPVOID get_imp(PIMAGE_IMPORT_DESCRIPTOR imp, LPVOID base, PDWORD api) {
-    PDWORD                   name;
-    LPVOID                   api_adr;
-    PIMAGE_THUNK_DATA        oft, ft;
-    PIMAGE_IMPORT_BY_NAME    ibn;
-    DWORD                    rva;
+    PDWORD                name;
+    LPVOID                api_adr;
+    PIMAGE_THUNK_DATA     oft, ft;
+    PIMAGE_IMPORT_BY_NAME ibn;
+    DWORD                 rva;
     
     rva = imp->OriginalFirstThunk;
-    oft = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
+    oft = RVA2VA(PIMAGE_THUNK_DATA, base, rva);
     
     rva = imp->FirstThunk;
-    ft  = (PIMAGE_THUNK_DATA)RVA2VA(ULONG_PTR, base, rva);
+    ft  = RVA2VA(PIMAGE_THUNK_DATA, base, rva);
       
     for(;; oft++, ft++) {
       // no API left?
@@ -49,7 +49,7 @@ LPVOID get_imp(PIMAGE_IMPORT_DESCRIPTOR imp, LPVOID base, PDWORD api) {
       if(IMAGE_SNAP_BY_ORDINAL(oft->u1.Ordinal)) continue;
       
       rva  = oft->u1.AddressOfData;
-      ibn  = (PIMAGE_IMPORT_BY_NAME)RVA2VA(ULONG_PTR, base, rva);
+      ibn  = RVA2VA(PIMAGE_IMPORT_BY_NAME, base, rva);
       name = (PDWORD)ibn->Name;
       
       // have we a match?
@@ -77,20 +77,19 @@ int main(void) {
     nt   = RVA2VA(PIMAGE_NT_HEADERS, base, dos->e_lfanew);
     dir  = (PIMAGE_DATA_DIRECTORY)nt->OptionalHeader.DataDirectory;
     rva  = dir[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;  
-    imp  = (PIMAGE_IMPORT_DESCRIPTOR) RVA2VA(ULONG_PTR, base, rva);
+    imp  = RVA2VA(PIMAGE_IMPORT_DESCRIPTOR, base, rva);
     
     // locate kernel32.dll
-    for (;imp->Name!=0;imp++) 
-    {
+    for (;imp->Name!=0;imp++) {
       dll = RVA2VA(PDWORD, base, imp->Name);
-      if ((dll[0] | 0x20202020) == 'nrek' && 
-          (dll[1] | 0x20202020) == '23le')
-      { 
-        // now locate GetProcAddress and LoadLibraryA
-        lla = get_imp(imp, base, (PDWORD)"LoadLibraryA");
-        gpa = get_imp(imp, base, (PDWORD)"GetProcAddress");
-        break;
-      }
+      
+      if ((dll[0] | 0x20202020) == 'nrek' ||
+          (dll[1] | 0x20202020) == '23le') continue;
+          
+      // now locate GetProcAddress and LoadLibraryA
+      lla = get_imp(imp, base, (PDWORD)"LoadLibraryA");
+      gpa = get_imp(imp, base, (PDWORD)"GetProcAddress");
+      break;
     }
     
     printf ("\nGetProcAddress : %p"

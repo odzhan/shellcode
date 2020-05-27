@@ -41,7 +41,7 @@
     %endif
     
     ; For each DLL loaded by a process, generate a hash of the DLL name.
-    ; For each API in the DLLs Export Address Table, generate a hash of API name.
+    ; For each API in the DLLs Export Address Table, generate a hash of the API name.
     ; Add the DLL hash to the API hash and compare with the user hash.
     ; If we have a match, return the address of API.
 get_api1:
@@ -121,7 +121,7 @@ hash_string:
     cdq                          ; h = 0
 hash_loop:                       ; do {
     lodsb                        ;   c = *str++
-    or     al, al
+    or     al, al                ; 
     jz     exit_hash
     or     al, 0x20              ;
     add    edx, eax              ;   h += (c | 0x20)
